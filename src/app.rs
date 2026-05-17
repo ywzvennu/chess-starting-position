@@ -14,16 +14,18 @@ pub fn App() -> impl IntoView {
 
     view! {
         <header class="app-header">
-            <h1>"Chess starting position explorer"</h1>
+            <h1>"Chess Starting Position Explorer"</h1>
             <ThemeToggle/>
         </header>
 
-        <p class="intro">
-            "Explore chess back-rank arrangements under composable constraints. "
-            "Pick the piece kinds available to the problem, build a constraint tree "
-            "(or load a preset such as Chess-960), then count, browse, sample, or "
-            "look up FIDE SP-IDs interactively."
-        </p>
+        <section class="intro" aria-label="About">
+            <p>
+                "Explore the space of chess starting positions under composable constraints. "
+                "Pick the piece kinds available to the problem, build a constraint tree (or "
+                "load a preset such as Chess-960), then count, browse, sample, or — for "
+                "Chess-960 — look up FIDE SP-IDs interactively."
+            </p>
+        </section>
 
         <div class="layout">
             <section class="pane config-pane" aria-label="Configuration">
