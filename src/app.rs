@@ -1,14 +1,24 @@
+use crate::components::alphabet::AlphabetSelector;
 use crate::components::board::Board;
-use chess_startpos_rs::chess;
+use crate::state::{build_problem, AppState};
 use leptos::prelude::*;
 
 #[component]
 pub fn App() -> impl IntoView {
-    let chess960_count = chess::chess_960().count();
-    let standard_position = chess::chess_960()
-        .sp_id(518)
-        .expect("SP-ID 518 is the standard FIDE position");
-    let standard_signal = RwSignal::new(standard_position);
+    let state = AppState::new();
+    provide_context(state);
+
+    let alphabet = state.alphabet;
+    let root_constraint = state.root_constraint;
+
+    let count = Memo::new(move |_| {
+        build_problem(alphabet.get(), root_constraint.get()).count()
+    });
+
+    let arrangement = Signal::derive(move || {
+        let problem = build_problem(alphabet.get(), root_constraint.get());
+        problem.at(0).unwrap_or_default()
+    });
 
     view! {
         <header class="app-header">
@@ -26,20 +36,32 @@ pub fn App() -> impl IntoView {
         <div class="layout">
             <section class="pane config-pane" aria-label="Configuration">
                 <h2>"Configuration"</h2>
+                <AlphabetSelector/>
                 <p class="placeholder">
-                    "Piece alphabet, presets, and constraints will appear here."
+                    "Presets and constraints will appear here."
                 </p>
             </section>
 
             <section class="pane results-pane" aria-label="Results">
                 <h2>"Results"</h2>
                 <dl class="stats">
-                    <dt>"chess_960 count"</dt>
-                    <dd>{chess960_count}</dd>
-                    <dt>"Sample"</dt>
-                    <dd>"SP-ID 518 (standard)"</dd>
+                    <dt>"Count"</dt>
+                    <dd>{move || count.get()}</dd>
                 </dl>
-                <Board pieces=standard_signal/>
+                {move || {
+                    if count.get() == 0 {
+                        view! {
+                            <p class="empty">
+                                "No arrangements satisfy the current alphabet and constraints."
+                            </p>
+                        }.into_any()
+                    } else {
+                        view! {
+                            <Board pieces=arrangement/>
+                            <p class="hint">"Showing arrangement at index 0."</p>
+                        }.into_any()
+                    }
+                }}
             </section>
         </div>
     }
