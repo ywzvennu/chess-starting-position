@@ -17,7 +17,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
     --bg: #121212;
     --fg: #ececec;
     --muted: #9a9a9a;
@@ -28,6 +28,18 @@
     --square-dark: #8a6a4a;
     --piece-color: #1a1a1a;
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #121212;
+  --fg: #ececec;
+  --muted: #9a9a9a;
+  --border: #2a2a2a;
+  --accent: #63b3ed;
+  --pane-bg: #1c1c1c;
+  --square-light: #d8c9a3;
+  --square-dark: #8a6a4a;
+  --piece-color: #1a1a1a;
 }
 
 * {
@@ -50,11 +62,94 @@ main {
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--border);
   margin-bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
 }
 
 .app-header h1 {
   margin: 0;
   font-size: 1.5rem;
+}
+
+.theme-toggle {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--pane-bg);
+  color: var(--fg);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.theme-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.theme-button .caret {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.theme-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 10;
+  list-style: none;
+  padding: 0.25rem;
+  margin: 0;
+  background: var(--pane-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-width: 140px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.theme-menu li {
+  margin: 0;
+}
+
+.theme-menu button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.35rem 0.55rem;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  text-align: left;
+}
+
+.theme-menu button:hover {
+  background: var(--bg);
+}
+
+.theme-menu button.selected {
+  color: var(--accent);
+}
+
+.theme-menu .check {
+  width: 1ch;
+  display: inline-block;
+  color: var(--accent);
 }
 
 .intro {
