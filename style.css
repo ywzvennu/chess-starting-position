@@ -336,6 +336,19 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+.advance-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.advance-toggle input[type="checkbox"] {
+  margin: 0;
+}
+
 .constraint-editor {
   border: 1px solid var(--border);
   border-radius: 6px;

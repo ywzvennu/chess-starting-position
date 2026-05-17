@@ -14,6 +14,7 @@ pub fn OutputPanel() -> impl IntoView {
 
     let index = RwSignal::new(0u64);
     let seed = RwSignal::new(0u64);
+    let advance = RwSignal::new(false);
 
     // Clamp the index when the count drops below it.
     Effect::new(move |_| {
@@ -104,7 +105,12 @@ pub fn OutputPanel() -> impl IntoView {
                     }
                 };
                 let on_sample = move |_| {
-                    seed.update(|s| *s = advance_seed(*s));
+                    if advance.get() {
+                        seed.update(|s| *s = advance_seed(*s));
+                    } else {
+                        // Re-notify even when the seed is unchanged so the derived sample re-renders.
+                        seed.update(|_| {});
+                    }
                 };
 
                 view! {
@@ -156,6 +162,17 @@ pub fn OutputPanel() -> impl IntoView {
                                 />
                             </label>
                             <button type="button" on:click=on_sample>"Sample"</button>
+                            <label class="advance-toggle" title="Advance the seed via xorshift after each sample">
+                                <input
+                                    type="checkbox"
+                                    prop:checked=move || advance.get()
+                                    on:change=move |ev| {
+                                        let checked = event_target_checked(&ev);
+                                        advance.set(checked);
+                                    }
+                                />
+                                <span>"Advance seed each click"</span>
+                            </label>
                         </div>
                         <Board pieces=sample_arrangement/>
                         <p class="sample-meta">
