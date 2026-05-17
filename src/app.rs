@@ -1,5 +1,7 @@
 use crate::components::alphabet::AlphabetSelector;
 use crate::components::board::Board;
+use crate::components::constraint_view::ConstraintView;
+use crate::components::presets::PresetButtons;
 use crate::state::{build_problem, AppState};
 use leptos::prelude::*;
 
@@ -36,10 +38,9 @@ pub fn App() -> impl IntoView {
         <div class="layout">
             <section class="pane config-pane" aria-label="Configuration">
                 <h2>"Configuration"</h2>
+                <PresetButtons/>
                 <AlphabetSelector/>
-                <p class="placeholder">
-                    "Presets and constraints will appear here."
-                </p>
+                <ConstraintView/>
             </section>
 
             <section class="pane results-pane" aria-label="Results">

@@ -211,3 +211,53 @@ main {
   color: var(--muted);
   font-size: 0.85rem;
 }
+
+.presets,
+.constraint-view {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.presets legend,
+.constraint-view legend {
+  padding: 0 0.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.4rem;
+}
+
+.preset-grid button {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  background: var(--pane-bg);
+  color: var(--fg);
+  border-radius: 5px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.preset-grid button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.constraint-view pre {
+  margin: 0.3rem 0 0;
+  padding: 0.5rem 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
