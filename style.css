@@ -261,3 +261,63 @@ main {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.output-block {
+  margin-bottom: 1rem;
+}
+
+.output-block:last-child {
+  margin-bottom: 0;
+}
+
+.output-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.output-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.output-controls input[type="number"] {
+  width: 9ch;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--pane-bg);
+  color: var(--fg);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.output-controls button {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border);
+  background: var(--pane-bg);
+  color: var(--fg);
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.output-controls button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.output-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.output-controls .of {
+  color: var(--muted);
+  font-size: 0.85rem;
+}

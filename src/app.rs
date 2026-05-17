@@ -1,26 +1,14 @@
 use crate::components::alphabet::AlphabetSelector;
-use crate::components::board::Board;
 use crate::components::constraint_view::ConstraintView;
+use crate::components::output::OutputPanel;
 use crate::components::presets::PresetButtons;
-use crate::state::{build_problem, AppState};
+use crate::state::AppState;
 use leptos::prelude::*;
 
 #[component]
 pub fn App() -> impl IntoView {
     let state = AppState::new();
     provide_context(state);
-
-    let alphabet = state.alphabet;
-    let root_constraint = state.root_constraint;
-
-    let count = Memo::new(move |_| {
-        build_problem(alphabet.get(), root_constraint.get()).count()
-    });
-
-    let arrangement = Signal::derive(move || {
-        let problem = build_problem(alphabet.get(), root_constraint.get());
-        problem.at(0).unwrap_or_default()
-    });
 
     view! {
         <header class="app-header">
@@ -45,24 +33,7 @@ pub fn App() -> impl IntoView {
 
             <section class="pane results-pane" aria-label="Results">
                 <h2>"Results"</h2>
-                <dl class="stats">
-                    <dt>"Count"</dt>
-                    <dd>{move || count.get()}</dd>
-                </dl>
-                {move || {
-                    if count.get() == 0 {
-                        view! {
-                            <p class="empty">
-                                "No arrangements satisfy the current alphabet and constraints."
-                            </p>
-                        }.into_any()
-                    } else {
-                        view! {
-                            <Board pieces=arrangement/>
-                            <p class="hint">"Showing arrangement at index 0."</p>
-                        }.into_any()
-                    }
-                }}
+                <OutputPanel/>
             </section>
         </div>
     }
