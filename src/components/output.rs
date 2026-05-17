@@ -206,7 +206,7 @@ pub fn OutputPanel() -> impl IntoView {
                                     Some(sp) => format!("Index {} · SP-ID {}", idx, sp),
                                     None => format!("Index {}", idx),
                                 },
-                                None => "—".to_string(),
+                                None => String::new(),
                             }}
                         </p>
                     </div>

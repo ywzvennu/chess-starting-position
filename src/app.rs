@@ -22,8 +22,8 @@ pub fn App() -> impl IntoView {
             <p>
                 "Explore the space of chess starting positions under composable constraints. "
                 "Pick the piece kinds available to the problem, build a constraint tree (or "
-                "load a preset such as Chess-960), then count, browse, sample, or — for "
-                "Chess-960 — look up FIDE SP-IDs interactively."
+                "load a preset such as Chess-960), then count, browse, and sample, with "
+                "FIDE SP-ID lookup for Chess-960."
             </p>
         </section>
 
