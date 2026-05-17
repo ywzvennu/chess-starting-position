@@ -1,4 +1,4 @@
-use chess_startpos_rs::chess::Piece;
+use chess_startpos_rs::chess::{self, Piece};
 use chess_startpos_rs::{Constraint, Problem, SquareColor};
 use leptos::prelude::*;
 
@@ -37,4 +37,9 @@ pub fn build_problem(alphabet: Vec<Piece>, constraint: ChessConstraint) -> Chess
         .pieces(alphabet)
         .constraint(constraint)
         .build()
+}
+
+pub fn is_chess_960(alphabet: &[Piece], root: &ChessConstraint) -> bool {
+    let canonical = chess::chess_960().into_problem();
+    alphabet == canonical.pieces.as_slice() && root == &canonical.constraint
 }

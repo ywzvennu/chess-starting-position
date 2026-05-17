@@ -322,6 +322,20 @@ main {
   font-size: 0.85rem;
 }
 
+.output-title {
+  margin: 0 0 0.3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.sample-meta {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .constraint-editor {
   border: 1px solid var(--border);
   border-radius: 6px;
