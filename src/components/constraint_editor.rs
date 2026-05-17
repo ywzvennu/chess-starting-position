@@ -2,6 +2,9 @@ use crate::state::{AppState, ChessConstraint, BOARD_SQUARES};
 use chess_startpos_rs::chess::Piece;
 use chess_startpos_rs::{Constraint, CountOp, SquareColor};
 use leptos::prelude::*;
+use std::rc::Rc;
+
+type Replacer = Rc<dyn Fn(ChessConstraint)>;
 
 #[component]
 pub fn ConstraintEditor() -> impl IntoView {
@@ -9,166 +12,488 @@ pub fn ConstraintEditor() -> impl IntoView {
     let root = state.root_constraint;
     let alphabet = state.alphabet;
 
-    let children = move || -> Vec<ChessConstraint> {
-        root.with(|c| match c {
-            Constraint::And(v) => v.clone(),
-            other => vec![other.clone()],
-        })
-    };
-
-    let with_children = move |mutate: Box<dyn FnOnce(&mut Vec<ChessConstraint>)>| {
-        root.update(|c| {
-            let mut v = match std::mem::replace(c, Constraint::And(Vec::new())) {
-                Constraint::And(v) => v,
-                other => vec![other],
-            };
-            mutate(&mut v);
-            *c = Constraint::And(v);
-        });
-    };
-
-    let add_count = move |_| {
-        let first = alphabet.with(|a| a.first().copied()).unwrap_or(Piece::King);
-        with_children(Box::new(move |v| {
-            v.push(Constraint::Count {
-                piece: first,
-                op: CountOp::Eq,
-                value: 1,
-            });
-        }));
-    };
-    let add_count_on_color = move |_| {
-        let first = alphabet.with(|a| a.first().copied()).unwrap_or(Piece::King);
-        with_children(Box::new(move |v| {
-            v.push(Constraint::CountOnColor {
-                piece: first,
-                color: SquareColor::Light,
-                op: CountOp::Eq,
-                value: 1,
-            });
-        }));
-    };
-    let add_at = move |_| {
-        let first = alphabet.with(|a| a.first().copied()).unwrap_or(Piece::King);
-        with_children(Box::new(move |v| {
-            v.push(Constraint::At {
-                piece: first,
-                square: 0,
-            });
-        }));
-    };
-    let add_not_at = move |_| {
-        let first = alphabet.with(|a| a.first().copied()).unwrap_or(Piece::King);
-        with_children(Box::new(move |v| {
-            v.push(Constraint::NotAt {
-                piece: first,
-                square: 0,
-            });
-        }));
-    };
-    let add_order = move |_| {
-        let first = alphabet.with(|a| a.first().copied()).unwrap_or(Piece::King);
-        with_children(Box::new(move |v| {
-            v.push(Constraint::Order(vec![(first, 0), (first, 1)]));
-        }));
-    };
-    let add_relative = move |_| {
-        let first = alphabet.with(|a| a.first().copied()).unwrap_or(Piece::King);
-        with_children(Box::new(move |v| {
-            v.push(Constraint::Relative {
-                lhs: (first, 0),
-                rhs: (first, 1),
-                op: CountOp::Lt,
-                offset: 0,
-            });
-        }));
-    };
-
     view! {
         <fieldset class="constraint-editor">
-            <legend>"Constraints (AND of leaves)"</legend>
+            <legend>"Constraints"</legend>
             <p class="hint">
-                "Each row is a leaf constraint combined under a top-level AND. Composite combinators land in a later change."
+                "Build a tree of constraints with And / Or / Not combinators and the six leaf primitives."
             </p>
-
-            <div class="constraint-list">
-                {move || {
-                    let items = children();
-                    if items.is_empty() {
-                        view! {
-                            <p class="empty">"No constraints — all arrangements over the alphabet are accepted."</p>
-                        }
-                        .into_any()
-                    } else {
-                        items
-                            .into_iter()
-                            .enumerate()
-                            .map(|(idx, c)| {
-                                view! {
-                                    <ConstraintRow idx=idx initial=c/>
-                                }
-                            })
-                            .collect_view()
-                            .into_any()
-                    }
-                }}
-            </div>
-
-            <div class="add-row">
-                <span class="add-label">"Add:"</span>
-                <button type="button" on:click=add_count>"Count"</button>
-                <button type="button" on:click=add_count_on_color>"CountOnColor"</button>
-                <button type="button" on:click=add_at>"At"</button>
-                <button type="button" on:click=add_not_at>"NotAt"</button>
-                <button type="button" on:click=add_order>"Order"</button>
-                <button type="button" on:click=add_relative>"Relative"</button>
-            </div>
+            {move || {
+                let current = root.get();
+                let replace: Replacer = Rc::new(move |new| root.set(new));
+                render_node(current, replace, alphabet.into(), true)
+            }}
         </fieldset>
     }
 }
 
-#[component]
-fn ConstraintRow(idx: usize, initial: ChessConstraint) -> impl IntoView {
-    let state = expect_context::<AppState>();
-    let root = state.root_constraint;
-    let alphabet = state.alphabet;
+fn render_node(
+    node: ChessConstraint,
+    replace: Replacer,
+    alphabet: Signal<Vec<Piece>>,
+    is_root: bool,
+) -> AnyView {
+    match node {
+        Constraint::And(children) => {
+            render_combinator("And", children, replace, alphabet, is_root)
+        }
+        Constraint::Or(children) => {
+            render_combinator("Or", children, replace, alphabet, is_root)
+        }
+        Constraint::Not(child) => render_not(*child, replace, alphabet, is_root),
+        leaf => render_leaf(leaf, replace, alphabet, is_root),
+    }
+}
 
-    let replace_at = move |new: ChessConstraint| {
-        root.update(|c| {
-            let mut v = match std::mem::replace(c, Constraint::And(Vec::new())) {
-                Constraint::And(v) => v,
-                other => vec![other],
-            };
-            if let Some(slot) = v.get_mut(idx) {
-                *slot = new;
+fn render_combinator(
+    kind: &'static str,
+    children: Vec<ChessConstraint>,
+    replace: Replacer,
+    alphabet: Signal<Vec<Piece>>,
+    is_root: bool,
+) -> AnyView {
+    let len = children.len();
+    let children_for_render: Vec<_> = children
+        .iter()
+        .cloned()
+        .enumerate()
+        .map({
+            let outer = children.clone();
+            let replace = Rc::clone(&replace);
+            let kind = kind;
+            move |(i, child)| {
+                let outer = outer.clone();
+                let replace = Rc::clone(&replace);
+                let child_replace: Replacer = Rc::new(move |new_child| {
+                    let mut next = outer.clone();
+                    if let Some(slot) = next.get_mut(i) {
+                        *slot = new_child;
+                    }
+                    replace(rebuild_combinator(kind, next));
+                });
+                (i, child, child_replace)
             }
-            *c = Constraint::And(v);
-        });
-    };
-    let remove = move |_| {
-        root.update(|c| {
-            let mut v = match std::mem::replace(c, Constraint::And(Vec::new())) {
-                Constraint::And(v) => v,
-                other => vec![other],
-            };
-            if idx < v.len() {
-                v.remove(idx);
+        })
+        .collect();
+
+    // Remove a child at index i
+    let on_remove_child = {
+        let children = children.clone();
+        let replace = Rc::clone(&replace);
+        let kind = kind;
+        move |i: usize| {
+            let mut next = children.clone();
+            if i < next.len() {
+                next.remove(i);
             }
-            *c = Constraint::And(v);
-        });
+            replace(rebuild_combinator(kind, next));
+        }
     };
 
-    let label = leaf_label(&initial);
-    let body = render_body(initial, alphabet.into(), replace_at);
+    // Add buttons
+    let add_leaf = {
+        let children = children.clone();
+        let replace = Rc::clone(&replace);
+        let kind = kind;
+        move |leaf: ChessConstraint| {
+            let mut next = children.clone();
+            next.push(leaf);
+            replace(rebuild_combinator(kind, next));
+        }
+    };
+
+    // Combinator type change (And <-> Or, or wrap with Not)
+    let on_combinator_change = {
+        let children = children.clone();
+        let replace = Rc::clone(&replace);
+        move |new_kind: &str| match new_kind {
+            "and" => replace(Constraint::And(children.clone())),
+            "or" => replace(Constraint::Or(children.clone())),
+            "not" => {
+                let inner = if children.len() == 1 {
+                    children[0].clone()
+                } else {
+                    Constraint::And(children.clone())
+                };
+                replace(Constraint::Not(Box::new(inner)));
+            }
+            _ => {}
+        }
+    };
+
+    let on_remove_self = {
+        let replace = Rc::clone(&replace);
+        move |_| {
+            if is_root {
+                replace(Constraint::And(Vec::new()));
+            } else {
+                replace(Constraint::And(Vec::new()));
+            }
+        }
+    };
+
+    let first_piece = alphabet.with(|a| a.first().copied()).unwrap_or(Piece::King);
 
     view! {
-        <div class="constraint-row">
-            <div class="row-head">
+        <div class={if is_root { "node combinator root" } else { "node combinator" }}>
+            <div class="node-head">
+                <CombinatorKindSelect
+                    value=kind
+                    on_change=Box::new(move |k| on_combinator_change(k))
+                />
+                <span class="node-count">{format!("{} child{}", len, if len == 1 { "" } else { "ren" })}</span>
+                <div class="node-actions">
+                    <AddLeafMenu
+                        first_piece=first_piece
+                        on_add=Rc::new(move |c| add_leaf(c))
+                    />
+                    {(!is_root).then(|| {
+                        view! {
+                            <button type="button" class="row-remove" on:click=on_remove_self aria-label="Remove subtree">"×"</button>
+                        }
+                    })}
+                </div>
+            </div>
+            <div class="node-children">
+                {if children_for_render.is_empty() {
+                    view! { <p class="empty-children">"No children — add a leaf or nested combinator."</p> }.into_any()
+                } else {
+                    children_for_render.into_iter().map(|(i, child, child_replace)| {
+                        let remove_this = on_remove_child.clone();
+                        view! {
+                            <div class="node-child">
+                                {render_node(child, child_replace, alphabet, false)}
+                                <button
+                                    type="button"
+                                    class="row-remove ghost"
+                                    on:click=move |_| remove_this(i)
+                                    aria-label="Remove child"
+                                >"remove"</button>
+                            </div>
+                        }
+                    }).collect_view().into_any()
+                }}
+            </div>
+        </div>
+    }
+    .into_any()
+}
+
+fn render_not(
+    child: ChessConstraint,
+    replace: Replacer,
+    alphabet: Signal<Vec<Piece>>,
+    is_root: bool,
+) -> AnyView {
+    let inner_replace: Replacer = {
+        let replace = Rc::clone(&replace);
+        Rc::new(move |new_inner| {
+            replace(Constraint::Not(Box::new(new_inner)));
+        })
+    };
+
+    // Change combinator: unwrap Not -> And of the child, or convert
+    let child_clone = child.clone();
+    let on_combinator_change = {
+        let replace = Rc::clone(&replace);
+        move |new_kind: &str| match new_kind {
+            "and" => replace(Constraint::And(vec![child_clone.clone()])),
+            "or" => replace(Constraint::Or(vec![child_clone.clone()])),
+            "not" => { /* already Not */ }
+            _ => {}
+        }
+    };
+
+    let on_remove_self = {
+        let replace = Rc::clone(&replace);
+        move |_| {
+            if is_root {
+                replace(Constraint::And(Vec::new()));
+            } else {
+                replace(Constraint::And(Vec::new()));
+            }
+        }
+    };
+
+    view! {
+        <div class={if is_root { "node combinator root not-node" } else { "node combinator not-node" }}>
+            <div class="node-head">
+                <CombinatorKindSelect
+                    value="Not"
+                    on_change=Box::new(move |k| on_combinator_change(k))
+                />
+                <div class="node-actions">
+                    {(!is_root).then(|| {
+                        view! {
+                            <button type="button" class="row-remove" on:click=on_remove_self aria-label="Remove subtree">"×"</button>
+                        }
+                    })}
+                </div>
+            </div>
+            <div class="node-children">
+                <div class="node-child">
+                    {render_node(child, inner_replace, alphabet, false)}
+                </div>
+            </div>
+        </div>
+    }
+    .into_any()
+}
+
+fn render_leaf(
+    node: ChessConstraint,
+    replace: Replacer,
+    alphabet: Signal<Vec<Piece>>,
+    _is_root: bool,
+) -> AnyView {
+    let label = leaf_label(&node);
+    let body = render_leaf_body(node.clone(), alphabet, Rc::clone(&replace));
+
+    // Wrap-in-Not control on every leaf
+    let wrap_in_not = {
+        let node = node.clone();
+        let replace = Rc::clone(&replace);
+        move |_| replace(Constraint::Not(Box::new(node.clone())))
+    };
+
+    view! {
+        <div class="node leaf">
+            <div class="node-head">
                 <span class="row-kind">{label}</span>
-                <button type="button" class="row-remove" on:click=remove aria-label="Remove constraint">"×"</button>
+                <div class="node-actions">
+                    <button type="button" class="wrap-btn" on:click=wrap_in_not title="Wrap in Not">"¬"</button>
+                </div>
             </div>
             {body}
         </div>
+    }
+    .into_any()
+}
+
+fn rebuild_combinator(kind: &str, children: Vec<ChessConstraint>) -> ChessConstraint {
+    match kind {
+        "And" => Constraint::And(children),
+        "Or" => Constraint::Or(children),
+        _ => Constraint::And(children),
+    }
+}
+
+#[component]
+fn CombinatorKindSelect(
+    value: &'static str,
+    on_change: Box<dyn Fn(&str)>,
+) -> impl IntoView {
+    view! {
+        <select
+            class="combinator-select"
+            on:change=move |ev| {
+                let raw = event_target_value(&ev);
+                on_change(&raw);
+            }
+        >
+            <option value="and" selected={value == "And"}>"And (∧)"</option>
+            <option value="or" selected={value == "Or"}>"Or (∨)"</option>
+            <option value="not" selected={value == "Not"}>"Not (¬)"</option>
+        </select>
+    }
+}
+
+#[component]
+fn AddLeafMenu(first_piece: Piece, on_add: Rc<dyn Fn(ChessConstraint)>) -> impl IntoView {
+    let mk = move |kind: &str| -> Option<ChessConstraint> {
+        Some(match kind {
+            "count" => Constraint::Count { piece: first_piece, op: CountOp::Eq, value: 1 },
+            "ccolor" => Constraint::CountOnColor { piece: first_piece, color: SquareColor::Light, op: CountOp::Eq, value: 1 },
+            "at" => Constraint::At { piece: first_piece, square: 0 },
+            "notat" => Constraint::NotAt { piece: first_piece, square: 0 },
+            "order" => Constraint::Order(vec![(first_piece, 0), (first_piece, 1)]),
+            "relative" => Constraint::Relative { lhs: (first_piece, 0), rhs: (first_piece, 1), op: CountOp::Lt, offset: 0 },
+            "and" => Constraint::And(Vec::new()),
+            "or" => Constraint::Or(Vec::new()),
+            "not" => Constraint::Not(Box::new(Constraint::And(Vec::new()))),
+            _ => return None,
+        })
+    };
+
+    view! {
+        <select
+            class="add-leaf"
+            on:change=move |ev| {
+                let raw = event_target_value(&ev);
+                if let Some(c) = mk(&raw) {
+                    on_add(c);
+                }
+            }
+        >
+            <option value="">"+ add…"</option>
+            <option value="count">"Count"</option>
+            <option value="ccolor">"CountOnColor"</option>
+            <option value="at">"At"</option>
+            <option value="notat">"NotAt"</option>
+            <option value="order">"Order"</option>
+            <option value="relative">"Relative"</option>
+            <option value="and">"And"</option>
+            <option value="or">"Or"</option>
+            <option value="not">"Not"</option>
+        </select>
+    }
+}
+
+fn render_leaf_body(
+    node: ChessConstraint,
+    alphabet: Signal<Vec<Piece>>,
+    replace: Replacer,
+) -> AnyView {
+    let r = Rc::clone(&replace);
+
+    match node {
+        Constraint::Count { piece, op, value } => {
+            let r1 = Rc::clone(&r);
+            let r2 = Rc::clone(&r);
+            let r3 = Rc::clone(&r);
+            view! {
+                <div class="row-body">
+                    <PieceSelect value=piece alphabet=alphabet
+                        on_change=Box::new(move |p| r1(Constraint::Count { piece: p, op, value }))/>
+                    <OpSelect value=op
+                        on_change=Box::new(move |o| r2(Constraint::Count { piece, op: o, value }))/>
+                    <NumberInput value=value as i64 min=0
+                        on_change=Box::new(move |v| r3(Constraint::Count { piece, op, value: v.max(0) as usize }))/>
+                </div>
+            }.into_any()
+        }
+        Constraint::CountOnColor { piece, color, op, value } => {
+            let r1 = Rc::clone(&r);
+            let r2 = Rc::clone(&r);
+            let r3 = Rc::clone(&r);
+            let r4 = Rc::clone(&r);
+            view! {
+                <div class="row-body">
+                    <PieceSelect value=piece alphabet=alphabet
+                        on_change=Box::new(move |p| r1(Constraint::CountOnColor { piece: p, color, op, value }))/>
+                    <ColorSelect value=color
+                        on_change=Box::new(move |c| r2(Constraint::CountOnColor { piece, color: c, op, value }))/>
+                    <OpSelect value=op
+                        on_change=Box::new(move |o| r3(Constraint::CountOnColor { piece, color, op: o, value }))/>
+                    <NumberInput value=value as i64 min=0
+                        on_change=Box::new(move |v| r4(Constraint::CountOnColor { piece, color, op, value: v.max(0) as usize }))/>
+                </div>
+            }.into_any()
+        }
+        Constraint::At { piece, square } => {
+            let r1 = Rc::clone(&r);
+            let r2 = Rc::clone(&r);
+            view! {
+                <div class="row-body">
+                    <PieceSelect value=piece alphabet=alphabet
+                        on_change=Box::new(move |p| r1(Constraint::At { piece: p, square }))/>
+                    <SquareSelect value=square
+                        on_change=Box::new(move |s| r2(Constraint::At { piece, square: s }))/>
+                </div>
+            }.into_any()
+        }
+        Constraint::NotAt { piece, square } => {
+            let r1 = Rc::clone(&r);
+            let r2 = Rc::clone(&r);
+            view! {
+                <div class="row-body">
+                    <PieceSelect value=piece alphabet=alphabet
+                        on_change=Box::new(move |p| r1(Constraint::NotAt { piece: p, square }))/>
+                    <SquareSelect value=square
+                        on_change=Box::new(move |s| r2(Constraint::NotAt { piece, square: s }))/>
+                </div>
+            }.into_any()
+        }
+        Constraint::Order(items) => {
+            let len = items.len();
+            let rows = items.clone();
+            let add_r = Rc::clone(&r);
+            let items_for_add = items.clone();
+            view! {
+                <div class="row-body order">
+                    {rows.into_iter().enumerate().map(|(i, (piece, k))| {
+                        let items_p = items.clone();
+                        let items_k = items.clone();
+                        let items_rm = items.clone();
+                        let rp = Rc::clone(&r);
+                        let rk = Rc::clone(&r);
+                        let rrm = Rc::clone(&r);
+                        let k_display = k as i64;
+                        view! {
+                            <span class="order-item">
+                                <PieceSelect value=piece alphabet=alphabet
+                                    on_change=Box::new(move |np| {
+                                        let mut next = items_p.clone();
+                                        if let Some(s) = next.get_mut(i) { s.0 = np; }
+                                        rp(Constraint::Order(next));
+                                    })/>
+                                <span class="hash">"#"</span>
+                                <NumberInput value=k_display min=0
+                                    on_change=Box::new(move |nk| {
+                                        let mut next = items_k.clone();
+                                        if let Some(s) = next.get_mut(i) { s.1 = nk.max(0) as usize; }
+                                        rk(Constraint::Order(next));
+                                    })/>
+                                <button type="button" class="row-remove small"
+                                    on:click=move |_| {
+                                        let mut next = items_rm.clone();
+                                        if i < next.len() { next.remove(i); }
+                                        rrm(Constraint::Order(next));
+                                    }
+                                    aria-label="Remove indexed piece">"×"</button>
+                            </span>
+                        }
+                    }).collect_view()}
+                    <button type="button" class="add-item"
+                        on:click=move |_| {
+                            let mut next = items_for_add.clone();
+                            let last_piece = next.last().map(|(p, _)| *p)
+                                .or_else(|| alphabet.with(|a| a.first().copied()))
+                                .unwrap_or(Piece::King);
+                            next.push((last_piece, len));
+                            add_r(Constraint::Order(next));
+                        }>"+ piece"</button>
+                </div>
+            }.into_any()
+        }
+        Constraint::Relative { lhs, rhs, op, offset } => {
+            let r1 = Rc::clone(&r);
+            let r2 = Rc::clone(&r);
+            let r3 = Rc::clone(&r);
+            let r4 = Rc::clone(&r);
+            let r5 = Rc::clone(&r);
+            let r6 = Rc::clone(&r);
+            view! {
+                <div class="row-body relative">
+                    <span class="rel-side">
+                        <PieceSelect value=lhs.0 alphabet=alphabet
+                            on_change=Box::new(move |p| r1(Constraint::Relative { lhs: (p, lhs.1), rhs, op, offset }))/>
+                        <span class="hash">"#"</span>
+                        <NumberInput value=lhs.1 as i64 min=0
+                            on_change=Box::new(move |v| r2(Constraint::Relative { lhs: (lhs.0, v.max(0) as usize), rhs, op, offset }))/>
+                    </span>
+                    <span class="rel-op">
+                        <OpSelect value=op
+                            on_change=Box::new(move |o| r3(Constraint::Relative { lhs, rhs, op: o, offset }))/>
+                    </span>
+                    <span class="rel-side">
+                        <PieceSelect value=rhs.0 alphabet=alphabet
+                            on_change=Box::new(move |p| r4(Constraint::Relative { lhs, rhs: (p, rhs.1), op, offset }))/>
+                        <span class="hash">"#"</span>
+                        <NumberInput value=rhs.1 as i64 min=0
+                            on_change=Box::new(move |v| r5(Constraint::Relative { lhs, rhs: (rhs.0, v.max(0) as usize), op, offset }))/>
+                    </span>
+                    <span class="rel-offset">
+                        <span>"offset"</span>
+                        <NumberInput value=offset as i64 min=-7
+                            on_change=Box::new(move |v| r6(Constraint::Relative { lhs, rhs, op, offset: v as i32 }))/>
+                    </span>
+                </div>
+            }.into_any()
+        }
+        other => view! {
+            <div class="row-body"><pre class="composite-pre">{format!("{:#?}", other)}</pre></div>
+        }.into_any(),
     }
 }
 
@@ -180,220 +505,7 @@ fn leaf_label(c: &ChessConstraint) -> &'static str {
         Constraint::NotAt { .. } => "NotAt",
         Constraint::Order(_) => "Order",
         Constraint::Relative { .. } => "Relative",
-        Constraint::And(_) => "And",
-        Constraint::Or(_) => "Or",
-        Constraint::Not(_) => "Not",
         _ => "Unknown",
-    }
-}
-
-fn render_body(
-    initial: ChessConstraint,
-    alphabet: Signal<Vec<Piece>>,
-    replace: impl Fn(ChessConstraint) + Copy + 'static,
-) -> AnyView {
-    match initial {
-        Constraint::Count { piece, op, value } => view! {
-            <div class="row-body">
-                <PieceSelect
-                    value=piece
-                    alphabet=alphabet
-                    on_change=Box::new(move |p| replace(Constraint::Count { piece: p, op, value }))
-                />
-                <OpSelect
-                    value=op
-                    on_change=Box::new(move |o| replace(Constraint::Count { piece, op: o, value }))
-                />
-                <NumberInput
-                    value=value as i64
-                    min=0
-                    on_change=Box::new(move |v| {
-                        replace(Constraint::Count { piece, op, value: v.max(0) as usize })
-                    })
-                />
-            </div>
-        }
-        .into_any(),
-        Constraint::CountOnColor {
-            piece,
-            color,
-            op,
-            value,
-        } => view! {
-            <div class="row-body">
-                <PieceSelect
-                    value=piece
-                    alphabet=alphabet
-                    on_change=Box::new(move |p| replace(Constraint::CountOnColor { piece: p, color, op, value }))
-                />
-                <ColorSelect
-                    value=color
-                    on_change=Box::new(move |c| replace(Constraint::CountOnColor { piece, color: c, op, value }))
-                />
-                <OpSelect
-                    value=op
-                    on_change=Box::new(move |o| replace(Constraint::CountOnColor { piece, color, op: o, value }))
-                />
-                <NumberInput
-                    value=value as i64
-                    min=0
-                    on_change=Box::new(move |v| {
-                        replace(Constraint::CountOnColor { piece, color, op, value: v.max(0) as usize })
-                    })
-                />
-            </div>
-        }
-        .into_any(),
-        Constraint::At { piece, square } => view! {
-            <div class="row-body">
-                <PieceSelect
-                    value=piece
-                    alphabet=alphabet
-                    on_change=Box::new(move |p| replace(Constraint::At { piece: p, square }))
-                />
-                <SquareSelect
-                    value=square
-                    on_change=Box::new(move |s| replace(Constraint::At { piece, square: s }))
-                />
-            </div>
-        }
-        .into_any(),
-        Constraint::NotAt { piece, square } => view! {
-            <div class="row-body">
-                <PieceSelect
-                    value=piece
-                    alphabet=alphabet
-                    on_change=Box::new(move |p| replace(Constraint::NotAt { piece: p, square }))
-                />
-                <SquareSelect
-                    value=square
-                    on_change=Box::new(move |s| replace(Constraint::NotAt { piece, square: s }))
-                />
-            </div>
-        }
-        .into_any(),
-        Constraint::Order(items) => {
-            let items_for_view = items.clone();
-            let len = items.len();
-            view! {
-                <div class="row-body order">
-                    {items_for_view
-                        .into_iter()
-                        .enumerate()
-                        .map(|(i, (piece, k))| {
-                            let outer = items.clone();
-                            let replace_pi = move |new_piece: Piece| {
-                                let mut next = outer.clone();
-                                if let Some(slot) = next.get_mut(i) { slot.0 = new_piece; }
-                                replace(Constraint::Order(next));
-                            };
-                            let outer2 = items.clone();
-                            let replace_k = move |new_k: i64| {
-                                let mut next = outer2.clone();
-                                if let Some(slot) = next.get_mut(i) { slot.1 = new_k.max(0) as usize; }
-                                replace(Constraint::Order(next));
-                            };
-                            let outer3 = items.clone();
-                            let remove_item = move |_| {
-                                let mut next = outer3.clone();
-                                if i < next.len() { next.remove(i); }
-                                replace(Constraint::Order(next));
-                            };
-                            let k_display = k as i64;
-                            view! {
-                                <span class="order-item">
-                                    <PieceSelect
-                                        value=piece
-                                        alphabet=alphabet
-                                        on_change=Box::new(replace_pi)
-                                    />
-                                    <span class="hash">"#"</span>
-                                    <NumberInput
-                                        value=k_display
-                                        min=0
-                                        on_change=Box::new(replace_k)
-                                    />
-                                    <button type="button" class="row-remove small" on:click=remove_item aria-label="Remove indexed piece">"×"</button>
-                                </span>
-                            }
-                        })
-                        .collect_view()}
-                    <button
-                        type="button"
-                        class="add-item"
-                        on:click={
-                            let items = items.clone();
-                            move |_| {
-                                let mut next = items.clone();
-                                let last_piece = next.last().map(|(p, _)| *p)
-                                    .or_else(|| alphabet.with(|a| a.first().copied()))
-                                    .unwrap_or(Piece::King);
-                                next.push((last_piece, len));
-                                replace(Constraint::Order(next));
-                            }
-                        }
-                    >"+ piece"</button>
-                </div>
-            }
-            .into_any()
-        }
-        Constraint::Relative { lhs, rhs, op, offset } => view! {
-            <div class="row-body relative">
-                <span class="rel-side">
-                    <PieceSelect
-                        value=lhs.0
-                        alphabet=alphabet
-                        on_change=Box::new(move |p| replace(Constraint::Relative { lhs: (p, lhs.1), rhs, op, offset }))
-                    />
-                    <span class="hash">"#"</span>
-                    <NumberInput
-                        value=lhs.1 as i64
-                        min=0
-                        on_change=Box::new(move |v| {
-                            replace(Constraint::Relative { lhs: (lhs.0, v.max(0) as usize), rhs, op, offset })
-                        })
-                    />
-                </span>
-                <span class="rel-op">
-                    <OpSelect
-                        value=op
-                        on_change=Box::new(move |o| replace(Constraint::Relative { lhs, rhs, op: o, offset }))
-                    />
-                </span>
-                <span class="rel-side">
-                    <PieceSelect
-                        value=rhs.0
-                        alphabet=alphabet
-                        on_change=Box::new(move |p| replace(Constraint::Relative { lhs, rhs: (p, rhs.1), op, offset }))
-                    />
-                    <span class="hash">"#"</span>
-                    <NumberInput
-                        value=rhs.1 as i64
-                        min=0
-                        on_change=Box::new(move |v| {
-                            replace(Constraint::Relative { lhs, rhs: (rhs.0, v.max(0) as usize), op, offset })
-                        })
-                    />
-                </span>
-                <span class="rel-offset">
-                    <span>"offset"</span>
-                    <NumberInput
-                        value=offset as i64
-                        min=-7
-                        on_change=Box::new(move |v| {
-                            replace(Constraint::Relative { lhs, rhs, op, offset: v as i32 })
-                        })
-                    />
-                </span>
-            </div>
-        }
-        .into_any(),
-        other => view! {
-            <div class="row-body">
-                <pre class="composite-pre">{format!("{:#?}", other)}</pre>
-            </div>
-        }
-        .into_any(),
     }
 }
 

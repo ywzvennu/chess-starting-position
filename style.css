@@ -497,3 +497,102 @@ main {
   border-color: var(--accent);
   color: var(--accent);
 }
+
+.node {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.4rem 0.5rem;
+  background: var(--bg);
+  margin: 0;
+}
+
+.node.combinator {
+  border-left: 3px solid var(--accent);
+}
+
+.node.combinator.not-node {
+  border-left-color: #c0392b;
+}
+
+.node-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.node-count {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.node-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.combinator-select,
+.add-leaf {
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--pane-bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.wrap-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 3px;
+  padding: 0 0.4rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.wrap-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.node-children {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-left: 0.6rem;
+  border-left: 1px dashed var(--border);
+}
+
+.node-child {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+}
+
+.row-remove.ghost {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+
+.row-remove.ghost:hover {
+  color: var(--accent);
+}
+
+.empty-children {
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.85rem;
+  margin: 0;
+}
