@@ -4,6 +4,7 @@ use crate::components::output::OutputPanel;
 use crate::components::presets::PresetButtons;
 use crate::components::sp_id::SpIdRoundTrip;
 use crate::state::AppState;
+use crate::theme::ThemeToggle;
 use leptos::prelude::*;
 
 #[component]
@@ -14,6 +15,7 @@ pub fn App() -> impl IntoView {
     view! {
         <header class="app-header">
             <h1>"Chess starting position explorer"</h1>
+            <ThemeToggle/>
         </header>
 
         <p class="intro">

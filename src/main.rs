@@ -1,6 +1,7 @@
 mod app;
 mod components;
 mod state;
+mod theme;
 
 use app::App;
 use leptos::prelude::*;
