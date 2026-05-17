@@ -39,6 +39,19 @@ pub fn OutputPanel() -> impl IntoView {
         }
     });
 
+    let indexed_sp_id = Signal::derive(move || {
+        if !is_chess_960(&alphabet.get(), &root_constraint.get()) {
+            return None;
+        }
+        indexed_arrangement.with(|arr| {
+            if arr.len() == 8 {
+                chess::chess_960().sp_id_of(arr)
+            } else {
+                None
+            }
+        })
+    });
+
     // Sample is button-driven only; the displayed arrangement does not
     // change in response to alphabet, constraint, or seed input changes —
     // the user must click Sample to refresh it.
@@ -53,6 +66,18 @@ pub fn OutputPanel() -> impl IntoView {
         }
     };
     let sample: RwSignal<Option<(u64, Vec<Piece>)>> = RwSignal::new(initial_sample);
+
+    // Clear the sample and reset the index when the problem itself changes
+    // (alphabet or root constraint). The previously-drawn sample is no longer
+    // guaranteed to satisfy the new problem; the user clicks Sample to refresh.
+    Effect::new(move |prev: Option<()>| {
+        alphabet.get();
+        root_constraint.get();
+        if prev.is_some() {
+            sample.set(None);
+            index.set(0);
+        }
+    });
 
     let sample_arrangement = Signal::derive(move || {
         sample.with(|s| s.as_ref().map(|(_, a)| a.clone()).unwrap_or_default())
@@ -184,6 +209,12 @@ pub fn OutputPanel() -> impl IntoView {
                         </div>
                         <Board pieces=indexed_arrangement/>
                         <BoardActions pieces=indexed_arrangement copied=copied_index/>
+                        <p class="sample-meta">
+                            {move || match indexed_sp_id.get() {
+                                Some(sp) => format!("SP-ID {}", sp),
+                                None => String::new(),
+                            }}
+                        </p>
                     </div>
 
                     <div class="output-block">
