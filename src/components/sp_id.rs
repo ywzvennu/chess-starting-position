@@ -1,5 +1,5 @@
 use crate::components::board::Board;
-use crate::state::AppState;
+use crate::state::{is_chess_960, AppState};
 use chess_startpos_rs::chess;
 use leptos::prelude::*;
 
@@ -10,9 +10,7 @@ pub fn SpIdRoundTrip() -> impl IntoView {
     let root_constraint = state.root_constraint;
 
     let active = Memo::new(move |_| {
-        let canonical = chess::chess_960().into_problem();
-        alphabet.with(|a| a.as_slice() == canonical.pieces.as_slice())
-            && root_constraint.with(|c| c == &canonical.constraint)
+        is_chess_960(&alphabet.get(), &root_constraint.get())
     });
 
     let sp_input = RwSignal::new(518u32);

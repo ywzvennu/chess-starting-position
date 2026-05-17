@@ -1,5 +1,6 @@
 use crate::components::board::Board;
-use crate::state::{build_problem, AppState};
+use crate::state::{build_problem, is_chess_960, AppState};
+use chess_startpos_rs::chess;
 use leptos::prelude::*;
 
 #[component]
@@ -14,7 +15,7 @@ pub fn OutputPanel() -> impl IntoView {
     let index = RwSignal::new(0u64);
     let seed = RwSignal::new(0u64);
 
-    // Clamp index whenever the count drops below it.
+    // Clamp the index when the count drops below it.
     Effect::new(move |_| {
         let c = count.get();
         index.update(|i| {
@@ -34,12 +35,27 @@ pub fn OutputPanel() -> impl IntoView {
         }
     });
 
-    let sampled_arrangement = Signal::derive(move || {
-        if count.get() == 0 {
-            Vec::new()
-        } else {
-            problem().sample(seed.get()).unwrap_or_default()
+    let sample = Signal::derive(move || {
+        let c = count.get();
+        if c == 0 {
+            return None;
         }
+        let idx = seed.get() % c;
+        problem().at(idx).map(|arr| (idx, arr))
+    });
+
+    let sample_arrangement = Signal::derive(move || {
+        sample.with(|s| s.as_ref().map(|(_, a)| a.clone()).unwrap_or_default())
+    });
+
+    let sample_sp_id = Signal::derive(move || {
+        if !is_chess_960(&alphabet.get(), &root_constraint.get()) {
+            return None;
+        }
+        sample.with(|s| {
+            s.as_ref()
+                .and_then(|(_, arr)| chess::chess_960().sp_id_of(arr))
+        })
     });
 
     view! {
@@ -87,12 +103,13 @@ pub fn OutputPanel() -> impl IntoView {
                         seed.set(v);
                     }
                 };
-                let on_random_seed = move |_| {
-                    seed.update(|s| *s = next_seed(*s));
+                let on_sample = move |_| {
+                    seed.update(|s| *s = advance_seed(*s));
                 };
 
                 view! {
                     <div class="output-block">
+                        <h3 class="output-title">"By index"</h3>
                         <div class="output-controls">
                             <label>
                                 <span>"Index"</span>
@@ -112,17 +129,13 @@ pub fn OutputPanel() -> impl IntoView {
                                 on:click=on_prev
                                 prop:disabled=stepper_disabled
                                 aria-label="Previous arrangement"
-                            >
-                                "◀"
-                            </button>
+                            >"◀"</button>
                             <button
                                 type="button"
                                 on:click=on_next
                                 prop:disabled=stepper_disabled
                                 aria-label="Next arrangement"
-                            >
-                                "▶"
-                            </button>
+                            >"▶"</button>
                             <span class="of">
                                 {move || format!("of {}", count.get())}
                             </span>
@@ -131,6 +144,7 @@ pub fn OutputPanel() -> impl IntoView {
                     </div>
 
                     <div class="output-block">
+                        <h3 class="output-title">"Random sample"</h3>
                         <div class="output-controls">
                             <label>
                                 <span>"Seed"</span>
@@ -141,14 +155,18 @@ pub fn OutputPanel() -> impl IntoView {
                                     on:input=on_seed_input
                                 />
                             </label>
-                            <button
-                                type="button"
-                                on:click=on_random_seed
-                            >
-                                "Random seed"
-                            </button>
+                            <button type="button" on:click=on_sample>"Sample"</button>
                         </div>
-                        <Board pieces=sampled_arrangement/>
+                        <Board pieces=sample_arrangement/>
+                        <p class="sample-meta">
+                            {move || match sample.get() {
+                                Some((idx, _)) => match sample_sp_id.get() {
+                                    Some(sp) => format!("Index {} · SP-ID {}", idx, sp),
+                                    None => format!("Index {}", idx),
+                                },
+                                None => "—".to_string(),
+                            }}
+                        </p>
                     </div>
                 }
                 .into_any()
@@ -157,7 +175,7 @@ pub fn OutputPanel() -> impl IntoView {
     }
 }
 
-fn next_seed(prev: u64) -> u64 {
+fn advance_seed(prev: u64) -> u64 {
     let mut x = prev.wrapping_add(0x9E3779B97F4A7C15);
     x ^= x << 13;
     x ^= x >> 7;
