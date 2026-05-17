@@ -40,15 +40,12 @@ pub fn OutputPanel() -> impl IntoView {
     });
 
     let sample = Signal::derive(move || {
-        if count.get() == 0 {
+        let c = count.get();
+        if c == 0 {
             return None;
         }
-        let p = problem();
-        let s = seed.get();
-        p.sample(s).map(|arr| {
-            let idx = p.iter().position(|a| a == arr).map(|i| i as u64).unwrap_or(0);
-            (idx, arr)
-        })
+        let idx = mix_seed(seed.get()) % c;
+        problem().at(idx).map(|arr| (idx, arr))
     });
 
     let sample_arrangement = Signal::derive(move || {
@@ -228,4 +225,12 @@ fn advance_seed(prev: u64) -> u64 {
     x ^= x >> 7;
     x ^= x << 17;
     x
+}
+
+// SplitMix64 — uncorrelated index for nearby seeds.
+fn mix_seed(seed: u64) -> u64 {
+    let mut x = seed.wrapping_add(0x9E3779B97F4A7C15);
+    x = (x ^ (x >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
+    x = (x ^ (x >> 27)).wrapping_mul(0x94D049BB133111EB);
+    x ^ (x >> 31)
 }

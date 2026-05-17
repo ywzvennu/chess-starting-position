@@ -28,7 +28,7 @@ pub fn BoardActions(
         copied.set(true);
         set_timeout(
             move || copied.set(false),
-            Duration::from_millis(1500),
+            Duration::from_millis(1000),
         );
     };
 
