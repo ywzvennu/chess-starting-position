@@ -151,21 +151,16 @@ fn render_combinator(
                 </div>
             </div>
             <div class="node-children">
-                {if children_for_render.is_empty() {
-                    view! { <p class="empty-children">"No children. Add a leaf or a nested combinator."</p> }.into_any()
-                } else {
-                    children_for_render
-                        .into_iter()
-                        .map(|(_i, child, child_replace, child_remove)| {
-                            view! {
-                                <div class="node-child">
-                                    {render_node(child, child_replace, Some(child_remove), alphabet)}
-                                </div>
-                            }
-                        })
-                        .collect_view()
-                        .into_any()
-                }}
+                {children_for_render
+                    .into_iter()
+                    .map(|(_i, child, child_replace, child_remove)| {
+                        view! {
+                            <div class="node-child">
+                                {render_node(child, child_replace, Some(child_remove), alphabet)}
+                            </div>
+                        }
+                    })
+                    .collect_view()}
             </div>
         </div>
     }

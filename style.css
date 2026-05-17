@@ -845,6 +845,10 @@ main {
   border-left: 1px dashed var(--border);
 }
 
+.node-children:empty {
+  display: none;
+}
+
 .node-child {
   display: flex;
   flex-direction: column;
@@ -853,12 +857,6 @@ main {
 }
 
 
-.empty-children {
-  color: var(--muted);
-  font-style: italic;
-  font-size: 0.85rem;
-  margin: 0;
-}
 
 .sp-id {
   border: 1px solid var(--border);
