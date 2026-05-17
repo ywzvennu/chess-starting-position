@@ -149,3 +149,65 @@ main {
 .glyph {
   line-height: 1;
 }
+
+.alphabet {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.alphabet legend {
+  padding: 0 0.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.alphabet .hint {
+  margin: 0.25rem 0 0.6rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.alphabet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.4rem;
+}
+
+.alphabet-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+}
+
+.alphabet-pill input {
+  margin: 0;
+}
+
+.alphabet-pill .glyph {
+  font-size: 1.2rem;
+  color: var(--piece-color);
+  background: var(--square-light);
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 3px;
+}
+
+.empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
