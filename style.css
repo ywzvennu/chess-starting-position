@@ -163,6 +163,7 @@ main {
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  max-width: 70ch;
 }
 
 .intro p {
@@ -170,7 +171,6 @@ main {
   color: var(--fg);
   font-size: 0.95rem;
   line-height: 1.6;
-  max-width: 72ch;
 }
 
 .app-footer {
