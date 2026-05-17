@@ -31,6 +31,14 @@ trunk build --release
 
 The static site is emitted into `dist/`.
 
+## Deployment
+
+A GitHub Actions workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) builds on every push to `main` and publishes to GitHub Pages via `actions/deploy-pages`.
+
+**One-time repository setting:** in the GitHub UI, go to **Settings → Pages** and set **Source** to **GitHub Actions**. No `gh-pages` branch is created or used.
+
+The published URL is `https://<owner>.github.io/chess-starting-position/`. The workflow passes `--public-url "/chess-starting-position/"` to Trunk so all asset paths resolve under that subpath.
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
