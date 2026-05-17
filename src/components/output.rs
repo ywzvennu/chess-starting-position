@@ -1,7 +1,7 @@
 use crate::components::board::Board;
 use crate::components::board_actions::BoardActions;
 use crate::state::{build_problem, is_chess_960, AppState, Orientation};
-use chess_startpos_rs::chess;
+use chess_startpos_rs::chess::{self, Piece};
 use leptos::prelude::*;
 
 #[component]
@@ -39,14 +39,20 @@ pub fn OutputPanel() -> impl IntoView {
         }
     });
 
-    let sample = Signal::derive(move || {
-        let c = count.get();
+    // Sample is button-driven only; the displayed arrangement does not
+    // change in response to alphabet, constraint, or seed input changes —
+    // the user must click Sample to refresh it.
+    let initial_sample: Option<(u64, Vec<Piece>)> = {
+        let p = build_problem(alphabet.get_untracked(), root_constraint.get_untracked());
+        let c = p.count();
         if c == 0 {
-            return None;
+            None
+        } else {
+            let idx = mix_seed(0) % c;
+            p.at(idx).map(|arr| (idx, arr))
         }
-        let idx = mix_seed(seed.get()) % c;
-        problem().at(idx).map(|arr| (idx, arr))
-    });
+    };
+    let sample: RwSignal<Option<(u64, Vec<Piece>)>> = RwSignal::new(initial_sample);
 
     let sample_arrangement = Signal::derive(move || {
         sample.with(|s| s.as_ref().map(|(_, a)| a.clone()).unwrap_or_default())
@@ -131,10 +137,18 @@ pub fn OutputPanel() -> impl IntoView {
                     }
                 };
                 let on_sample = move |_| {
+                    let p = problem();
+                    let c = p.count();
+                    if c == 0 {
+                        sample.set(None);
+                        return;
+                    }
+                    let idx = mix_seed(seed.get()) % c;
+                    if let Some(arr) = p.at(idx) {
+                        sample.set(Some((idx, arr)));
+                    }
                     if advance.get() {
                         seed.update(|s| *s = advance_seed(*s));
-                    } else {
-                        seed.update(|_| {});
                     }
                 };
 
