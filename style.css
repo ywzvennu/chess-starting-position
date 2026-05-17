@@ -464,9 +464,11 @@ main {
 
 .output-title {
   margin: 0 0 0.3rem;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--muted);
+  text-transform: uppercase;
 }
 
 .sample-meta {
@@ -493,7 +495,6 @@ main {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.9rem;
 }
@@ -503,32 +504,35 @@ main {
 }
 
 .orientation-toggle {
-  margin: 0;
-  padding: 0.25rem 0.55rem 0.4rem;
+  margin-left: auto;
+  display: inline-flex;
   border: 1px solid var(--border);
   border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
+  overflow: hidden;
 }
 
-.orientation-toggle legend {
-  padding: 0 0.3rem;
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.orientation-toggle label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
+.orientation-toggle button {
+  padding: 0.25rem 0.6rem;
+  border: 0;
+  background: var(--pane-bg);
   color: var(--fg);
   cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  border-right: 1px solid var(--border);
 }
 
-.orientation-toggle input[type="radio"] {
-  margin: 0;
+.orientation-toggle button:last-child {
+  border-right: 0;
+}
+
+.orientation-toggle button.selected {
+  background: var(--accent);
+  color: var(--pane-bg);
+}
+
+.orientation-toggle button:hover:not(.selected) {
+  color: var(--accent);
 }
 
 .board-actions {

@@ -74,27 +74,24 @@ pub fn OutputPanel() -> impl IntoView {
                 <dt>"Count"</dt>
                 <dd>{move || count.get()}</dd>
             </dl>
-            <fieldset class="orientation-toggle">
-                <legend>"Orientation"</legend>
-                <label>
-                    <input
-                        type="radio"
-                        name="orientation"
-                        prop:checked=move || matches!(orientation.get(), Orientation::White)
-                        on:change=move |_| orientation.set(Orientation::White)
-                    />
-                    <span>"White"</span>
-                </label>
-                <label>
-                    <input
-                        type="radio"
-                        name="orientation"
-                        prop:checked=move || matches!(orientation.get(), Orientation::Black)
-                        on:change=move |_| orientation.set(Orientation::Black)
-                    />
-                    <span>"Black"</span>
-                </label>
-            </fieldset>
+            <div class="orientation-toggle" role="group" aria-label="Board orientation">
+                <button
+                    type="button"
+                    class:selected=move || matches!(orientation.get(), Orientation::White)
+                    aria-pressed=move || if matches!(orientation.get(), Orientation::White) { "true" } else { "false" }
+                    on:click=move |_| orientation.set(Orientation::White)
+                >
+                    "White"
+                </button>
+                <button
+                    type="button"
+                    class:selected=move || matches!(orientation.get(), Orientation::Black)
+                    aria-pressed=move || if matches!(orientation.get(), Orientation::Black) { "true" } else { "false" }
+                    on:click=move |_| orientation.set(Orientation::Black)
+                >
+                    "Black"
+                </button>
+            </div>
         </div>
 
         {move || {
