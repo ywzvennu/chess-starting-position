@@ -1,6 +1,7 @@
 use crate::state::{fen_for_arrangement, lichess_editor_url};
 use chess_startpos_rs::chess::Piece;
 use leptos::prelude::*;
+use std::time::Duration;
 
 #[component]
 pub fn BoardActions(
@@ -25,6 +26,10 @@ pub fn BoardActions(
         let Some(text) = fen.get() else { return; };
         copy_to_clipboard(&text);
         copied.set(true);
+        set_timeout(
+            move || copied.set(false),
+            Duration::from_millis(1500),
+        );
     };
 
     view! {
