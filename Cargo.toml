@@ -1,0 +1,16 @@
+[package]
+name = "chess-starting-position"
+version = "0.1.0"
+edition = "2021"
+description = "Web UI for the chess-startpos-rs library"
+license = "MIT"
+repository = "https://github.com/ywzvennu/chess-starting-position"
+
+[dependencies]
+leptos = { version = "0.8", features = ["csr"] }
+console_error_panic_hook = "0.1"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
