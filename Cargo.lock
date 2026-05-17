@@ -149,7 +149,8 @@ dependencies = [
 [[package]]
 name = "chess-startpos-rs"
 version = "0.1.0"
-source = "git+https://github.com/ywzvennu/chess-startpos-rs#3f7661c9d32b79f9c5a5bea971947a58ed0c118b"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c8a89847e9dbdbe4a079d3086e3dd8f2660b03f0b6a4181bd30d3ab6004ce6e"
 dependencies = [
  "fastrand",
  "serde",
