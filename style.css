@@ -47,13 +47,9 @@ main {
 }
 
 .app-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 1rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .app-header h1 {
@@ -61,14 +57,36 @@ main {
   font-size: 1.5rem;
 }
 
-.upstream-link {
-  color: var(--accent);
-  text-decoration: none;
+.intro {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
   font-size: 0.95rem;
+  max-width: 70ch;
 }
 
-.upstream-link:hover {
+.app-footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.app-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
   text-decoration: underline;
+}
+
+.footer-sep {
+  color: var(--border);
 }
 
 .layout {

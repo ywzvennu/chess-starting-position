@@ -13,16 +13,15 @@ pub fn App() -> impl IntoView {
 
     view! {
         <header class="app-header">
-            <h1>"chess-starting-position"</h1>
-            <a
-                class="upstream-link"
-                href="https://github.com/ywzvennu/chess-startpos-rs"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                "chess-startpos-rs ↗"
-            </a>
+            <h1>"Chess starting position explorer"</h1>
         </header>
+
+        <p class="intro">
+            "Explore chess back-rank arrangements under composable constraints. "
+            "Pick the piece kinds available to the problem, build a constraint tree "
+            "(or load a preset such as Chess-960), then count, browse, sample, or "
+            "look up FIDE SP-IDs interactively."
+        </p>
 
         <div class="layout">
             <section class="pane config-pane" aria-label="Configuration">
@@ -38,5 +37,31 @@ pub fn App() -> impl IntoView {
                 <SpIdRoundTrip/>
             </section>
         </div>
+
+        <footer class="app-footer">
+            <a
+                href="https://github.com/ywzvennu/chess-starting-position"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                "chess-starting-position (this app) ↗"
+            </a>
+            <span class="footer-sep">"·"</span>
+            <a
+                href="https://github.com/ywzvennu/chess-startpos-rs"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                "chess-startpos-rs (library) ↗"
+            </a>
+            <span class="footer-sep">"·"</span>
+            <a
+                href="https://crates.io/crates/chess-startpos-rs"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                "crates.io ↗"
+            </a>
+        </footer>
     }
 }
