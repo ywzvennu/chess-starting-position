@@ -589,20 +589,6 @@ main {
   gap: 0.2rem;
 }
 
-.row-remove.ghost {
-  align-self: flex-end;
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  font-size: 0.75rem;
-  padding: 0;
-  cursor: pointer;
-  text-decoration: underline dotted;
-}
-
-.row-remove.ghost:hover {
-  color: var(--accent);
-}
 
 .empty-children {
   color: var(--muted);

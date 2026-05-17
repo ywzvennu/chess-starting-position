@@ -5,6 +5,7 @@ use leptos::prelude::*;
 use std::rc::Rc;
 
 type Replacer = Rc<dyn Fn(ChessConstraint)>;
+type Remover = Rc<dyn Fn()>;
 
 #[component]
 pub fn ConstraintEditor() -> impl IntoView {
@@ -21,7 +22,7 @@ pub fn ConstraintEditor() -> impl IntoView {
             {move || {
                 let current = root.get();
                 let replace: Replacer = Rc::new(move |new| root.set(new));
-                render_node(current, replace, alphabet.into(), true)
+                render_node(current, replace, None, alphabet.into())
             }}
         </fieldset>
     }
@@ -30,18 +31,18 @@ pub fn ConstraintEditor() -> impl IntoView {
 fn render_node(
     node: ChessConstraint,
     replace: Replacer,
+    remove: Option<Remover>,
     alphabet: Signal<Vec<Piece>>,
-    is_root: bool,
 ) -> AnyView {
     match node {
         Constraint::And(children) => {
-            render_combinator("And", children, replace, alphabet, is_root)
+            render_combinator("And", children, replace, remove, alphabet)
         }
         Constraint::Or(children) => {
-            render_combinator("Or", children, replace, alphabet, is_root)
+            render_combinator("Or", children, replace, remove, alphabet)
         }
-        Constraint::Not(child) => render_not(*child, replace, alphabet, is_root),
-        leaf => render_leaf(leaf, replace, alphabet, is_root),
+        Constraint::Not(child) => render_not(*child, replace, remove, alphabet),
+        leaf => render_leaf(leaf, replace, remove, alphabet),
     }
 }
 
@@ -49,10 +50,13 @@ fn render_combinator(
     kind: &'static str,
     children: Vec<ChessConstraint>,
     replace: Replacer,
+    remove: Option<Remover>,
     alphabet: Signal<Vec<Piece>>,
-    is_root: bool,
 ) -> AnyView {
     let len = children.len();
+    let is_root = remove.is_none();
+
+    // Per-child render entries: (index, child, child_replace, child_remove)
     let children_for_render: Vec<_> = children
         .iter()
         .cloned()
@@ -62,47 +66,36 @@ fn render_combinator(
             let replace = Rc::clone(&replace);
             let kind = kind;
             move |(i, child)| {
-                let outer = outer.clone();
-                let replace = Rc::clone(&replace);
-                let child_replace: Replacer = Rc::new(move |new_child| {
-                    let mut next = outer.clone();
-                    if let Some(slot) = next.get_mut(i) {
-                        *slot = new_child;
-                    }
-                    replace(rebuild_combinator(kind, next));
-                });
-                (i, child, child_replace)
+                // Replacer for this child: rebuilds the parent combinator with the child slot updated.
+                let child_replace: Replacer = {
+                    let outer = outer.clone();
+                    let replace = Rc::clone(&replace);
+                    Rc::new(move |new_child| {
+                        let mut next = outer.clone();
+                        if let Some(slot) = next.get_mut(i) {
+                            *slot = new_child;
+                        }
+                        replace(rebuild_combinator(kind, next));
+                    })
+                };
+                // Remover for this child: rebuilds the parent combinator without the child slot.
+                let child_remove: Remover = {
+                    let outer = outer.clone();
+                    let replace = Rc::clone(&replace);
+                    Rc::new(move || {
+                        let mut next = outer.clone();
+                        if i < next.len() {
+                            next.remove(i);
+                        }
+                        replace(rebuild_combinator(kind, next));
+                    })
+                };
+                (i, child, child_replace, child_remove)
             }
         })
         .collect();
 
-    // Remove a child at index i
-    let on_remove_child = {
-        let children = children.clone();
-        let replace = Rc::clone(&replace);
-        let kind = kind;
-        move |i: usize| {
-            let mut next = children.clone();
-            if i < next.len() {
-                next.remove(i);
-            }
-            replace(rebuild_combinator(kind, next));
-        }
-    };
-
-    // Add buttons
-    let add_leaf = {
-        let children = children.clone();
-        let replace = Rc::clone(&replace);
-        let kind = kind;
-        move |leaf: ChessConstraint| {
-            let mut next = children.clone();
-            next.push(leaf);
-            replace(rebuild_combinator(kind, next));
-        }
-    };
-
-    // Combinator type change (And <-> Or, or wrap with Not)
+    // Combinator type change (And ↔ Or, or wrap with Not)
     let on_combinator_change = {
         let children = children.clone();
         let replace = Rc::clone(&replace);
@@ -121,17 +114,6 @@ fn render_combinator(
         }
     };
 
-    let on_remove_self = {
-        let replace = Rc::clone(&replace);
-        move |_| {
-            if is_root {
-                replace(Constraint::And(Vec::new()));
-            } else {
-                replace(Constraint::And(Vec::new()));
-            }
-        }
-    };
-
     let first_piece = alphabet.with(|a| a.first().copied()).unwrap_or(Piece::King);
 
     view! {
@@ -145,11 +127,25 @@ fn render_combinator(
                 <div class="node-actions">
                     <AddLeafMenu
                         first_piece=first_piece
-                        on_add=Rc::new(move |c| add_leaf(c))
+                        on_add=Rc::new({
+                            let replace = Rc::clone(&replace);
+                            let children = children.clone();
+                            let kind = kind;
+                            move |c: ChessConstraint| {
+                                let mut next = children.clone();
+                                next.push(c);
+                                replace(rebuild_combinator(kind, next));
+                            }
+                        })
                     />
-                    {(!is_root).then(|| {
+                    {remove.clone().map(|r| {
                         view! {
-                            <button type="button" class="row-remove" on:click=on_remove_self aria-label="Remove subtree">"×"</button>
+                            <button
+                                type="button"
+                                class="row-remove"
+                                on:click=move |_| r()
+                                aria-label="Remove subtree"
+                            >"×"</button>
                         }
                     })}
                 </div>
@@ -158,20 +154,17 @@ fn render_combinator(
                 {if children_for_render.is_empty() {
                     view! { <p class="empty-children">"No children — add a leaf or nested combinator."</p> }.into_any()
                 } else {
-                    children_for_render.into_iter().map(|(i, child, child_replace)| {
-                        let remove_this = on_remove_child.clone();
-                        view! {
-                            <div class="node-child">
-                                {render_node(child, child_replace, alphabet, false)}
-                                <button
-                                    type="button"
-                                    class="row-remove ghost"
-                                    on:click=move |_| remove_this(i)
-                                    aria-label="Remove child"
-                                >"remove"</button>
-                            </div>
-                        }
-                    }).collect_view().into_any()
+                    children_for_render
+                        .into_iter()
+                        .map(|(_i, child, child_replace, child_remove)| {
+                            view! {
+                                <div class="node-child">
+                                    {render_node(child, child_replace, Some(child_remove), alphabet)}
+                                </div>
+                            }
+                        })
+                        .collect_view()
+                        .into_any()
                 }}
             </div>
         </div>
@@ -182,9 +175,12 @@ fn render_combinator(
 fn render_not(
     child: ChessConstraint,
     replace: Replacer,
+    remove: Option<Remover>,
     alphabet: Signal<Vec<Piece>>,
-    is_root: bool,
 ) -> AnyView {
+    let is_root = remove.is_none();
+
+    // Replacer for the inner child: rebuilds Not(new_inner).
     let inner_replace: Replacer = {
         let replace = Rc::clone(&replace);
         Rc::new(move |new_inner| {
@@ -192,26 +188,15 @@ fn render_not(
         })
     };
 
-    // Change combinator: unwrap Not -> And of the child, or convert
-    let child_clone = child.clone();
+    // Change combinator: unwrap Not -> And/Or with the current child as the lone element.
+    let child_for_swap = child.clone();
     let on_combinator_change = {
         let replace = Rc::clone(&replace);
         move |new_kind: &str| match new_kind {
-            "and" => replace(Constraint::And(vec![child_clone.clone()])),
-            "or" => replace(Constraint::Or(vec![child_clone.clone()])),
+            "and" => replace(Constraint::And(vec![child_for_swap.clone()])),
+            "or" => replace(Constraint::Or(vec![child_for_swap.clone()])),
             "not" => { /* already Not */ }
             _ => {}
-        }
-    };
-
-    let on_remove_self = {
-        let replace = Rc::clone(&replace);
-        move |_| {
-            if is_root {
-                replace(Constraint::And(Vec::new()));
-            } else {
-                replace(Constraint::And(Vec::new()));
-            }
         }
     };
 
@@ -223,16 +208,22 @@ fn render_not(
                     on_change=Box::new(move |k| on_combinator_change(k))
                 />
                 <div class="node-actions">
-                    {(!is_root).then(|| {
+                    {remove.clone().map(|r| {
                         view! {
-                            <button type="button" class="row-remove" on:click=on_remove_self aria-label="Remove subtree">"×"</button>
+                            <button
+                                type="button"
+                                class="row-remove"
+                                on:click=move |_| r()
+                                aria-label="Remove subtree"
+                            >"×"</button>
                         }
                     })}
                 </div>
             </div>
             <div class="node-children">
                 <div class="node-child">
-                    {render_node(child, inner_replace, alphabet, false)}
+                    // Not's child is not independently removable — pass None.
+                    {render_node(child, inner_replace, None, alphabet)}
                 </div>
             </div>
         </div>
@@ -243,13 +234,13 @@ fn render_not(
 fn render_leaf(
     node: ChessConstraint,
     replace: Replacer,
+    remove: Option<Remover>,
     alphabet: Signal<Vec<Piece>>,
-    _is_root: bool,
 ) -> AnyView {
     let label = leaf_label(&node);
     let body = render_leaf_body(node.clone(), alphabet, Rc::clone(&replace));
 
-    // Wrap-in-Not control on every leaf
+    // Wrap-in-Not shortcut
     let wrap_in_not = {
         let node = node.clone();
         let replace = Rc::clone(&replace);
@@ -262,6 +253,16 @@ fn render_leaf(
                 <span class="row-kind">{label}</span>
                 <div class="node-actions">
                     <button type="button" class="wrap-btn" on:click=wrap_in_not title="Wrap in Not">"¬"</button>
+                    {remove.clone().map(|r| {
+                        view! {
+                            <button
+                                type="button"
+                                class="row-remove"
+                                on:click=move |_| r()
+                                aria-label="Remove leaf"
+                            >"×"</button>
+                        }
+                    })}
                 </div>
             </div>
             {body}
