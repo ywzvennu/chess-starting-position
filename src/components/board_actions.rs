@@ -45,7 +45,7 @@ pub fn BoardActions(#[prop(into)] pieces: Signal<Vec<Piece>>) -> impl IntoView {
                 "Lichess editor ↗"
             </a>
             <code class="fen-preview">
-                {move || fen.get().unwrap_or_else(|| "—".to_string())}
+                {move || fen.get().unwrap_or_default()}
             </code>
         </div>
     }

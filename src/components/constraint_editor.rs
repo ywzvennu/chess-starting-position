@@ -152,7 +152,7 @@ fn render_combinator(
             </div>
             <div class="node-children">
                 {if children_for_render.is_empty() {
-                    view! { <p class="empty-children">"No children — add a leaf or nested combinator."</p> }.into_any()
+                    view! { <p class="empty-children">"No children. Add a leaf or a nested combinator."</p> }.into_any()
                 } else {
                     children_for_render
                         .into_iter()
@@ -222,7 +222,7 @@ fn render_not(
             </div>
             <div class="node-children">
                 <div class="node-child">
-                    // Not's child is not independently removable — pass None.
+                    // Not's child is not independently removable; pass None for the remover.
                     {render_node(child, inner_replace, None, alphabet)}
                 </div>
             </div>

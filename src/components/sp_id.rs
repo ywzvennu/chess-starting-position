@@ -63,7 +63,7 @@ pub fn SpIdRoundTrip() -> impl IntoView {
                                 "round-trip "
                                 {move || match round_trip.get() {
                                     Some(id) => format!("→ {}", id),
-                                    None => "→ —".to_string(),
+                                    None => String::new(),
                                 }}
                             </span>
                         </div>
