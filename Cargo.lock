@@ -144,7 +144,6 @@ dependencies = [
  "chess-startpos-rs",
  "console_error_panic_hook",
  "leptos",
- "wasm-bindgen",
  "web-sys",
 ]
 
