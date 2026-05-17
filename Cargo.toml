@@ -9,6 +9,7 @@ repository = "https://github.com/ywzvennu/chess-starting-position"
 [dependencies]
 leptos = { version = "0.8", features = ["csr"] }
 console_error_panic_hook = "0.1"
+chess-startpos-rs = { git = "https://github.com/ywzvennu/chess-startpos-rs", features = ["serde"] }
 
 [profile.release]
 opt-level = "z"

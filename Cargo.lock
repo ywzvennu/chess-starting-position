@@ -141,8 +141,18 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 name = "chess-starting-position"
 version = "0.1.0"
 dependencies = [
+ "chess-startpos-rs",
  "console_error_panic_hook",
  "leptos",
+]
+
+[[package]]
+name = "chess-startpos-rs"
+version = "0.1.0"
+source = "git+https://github.com/ywzvennu/chess-startpos-rs#3f7661c9d32b79f9c5a5bea971947a58ed0c118b"
+dependencies = [
+ "fastrand",
+ "serde",
 ]
 
 [[package]]
@@ -365,6 +375,12 @@ dependencies = [
  "event-listener",
  "pin-project-lite",
 ]
+
+[[package]]
+name = "fastrand"
+version = "2.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
 
 [[package]]
 name = "foldhash"
