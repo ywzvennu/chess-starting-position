@@ -15,6 +15,7 @@ pub fn SpIdRoundTrip() -> impl IntoView {
     });
 
     let sp_input = RwSignal::new(518u32);
+    let copied_sp = RwSignal::new(false);
 
     let arrangement = Signal::derive(move || {
         if !active.get() {
@@ -68,7 +69,7 @@ pub fn SpIdRoundTrip() -> impl IntoView {
                             </span>
                         </div>
                         <Board pieces=arrangement/>
-                        <BoardActions pieces=arrangement/>
+                        <BoardActions pieces=arrangement copied=copied_sp/>
                     </fieldset>
                 }
                 .into_any()
