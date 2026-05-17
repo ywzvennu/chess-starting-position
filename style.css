@@ -321,3 +321,179 @@ main {
   color: var(--muted);
   font-size: 0.85rem;
 }
+
+.constraint-editor {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.constraint-editor legend {
+  padding: 0 0.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.constraint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.constraint-row {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.4rem 0.5rem;
+  background: var(--bg);
+}
+
+.row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+}
+
+.row-kind {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.row-remove {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0 0.4rem;
+  line-height: 1;
+  font-size: 1rem;
+}
+
+.row-remove:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.row-remove.small {
+  font-size: 0.85rem;
+  padding: 0 0.3rem;
+}
+
+.row-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.row-body select,
+.row-body input[type="number"] {
+  padding: 0.2rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--pane-bg);
+  color: var(--fg);
+  font: inherit;
+}
+
+.row-body input[type="number"] {
+  width: 7ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.row-body .hash {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.row-body .piece-select.invalid {
+  border-color: #c0392b;
+}
+
+.row-body.order {
+  gap: 0.45rem;
+}
+
+.row-body.order .order-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.row-body.order .add-item,
+.row-body.relative .rel-op,
+.row-body.relative .rel-offset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.row-body.order .add-item {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.row-body.order .add-item:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.row-body.relative {
+  gap: 0.45rem;
+}
+
+.row-body.relative .rel-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.row-body.relative .rel-offset span:first-child {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.add-row {
+  margin-top: 0.7rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.add-row .add-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-right: 0.2rem;
+}
+
+.add-row button {
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--border);
+  background: var(--pane-bg);
+  color: var(--fg);
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.add-row button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

@@ -1,5 +1,5 @@
 use crate::components::alphabet::AlphabetSelector;
-use crate::components::constraint_view::ConstraintView;
+use crate::components::constraint_editor::ConstraintEditor;
 use crate::components::output::OutputPanel;
 use crate::components::presets::PresetButtons;
 use crate::state::AppState;
@@ -28,7 +28,7 @@ pub fn App() -> impl IntoView {
                 <h2>"Configuration"</h2>
                 <PresetButtons/>
                 <AlphabetSelector/>
-                <ConstraintView/>
+                <ConstraintEditor/>
             </section>
 
             <section class="pane results-pane" aria-label="Results">
