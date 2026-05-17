@@ -15,7 +15,11 @@ pub fn OutputPanel() -> impl IntoView {
     let count = Memo::new(move |_| problem().count());
 
     let index = RwSignal::new(0u64);
+    // `seed` is the value shown in the visible input. `internal_seed` is the
+    // running PRNG state used to derive each sample; it advances on every
+    // Sample click. Typing into the input syncs both.
     let seed = RwSignal::new(0u64);
+    let internal_seed = StoredValue::new(0u64);
     let advance = RwSignal::new(false);
     let copied_index = RwSignal::new(false);
     let copied_sample = RwSignal::new(false);
@@ -156,6 +160,7 @@ pub fn OutputPanel() -> impl IntoView {
                     let raw = event_target_value(&ev);
                     if let Ok(v) = raw.parse::<u64>() {
                         seed.set(v);
+                        internal_seed.set_value(v);
                     }
                 };
                 let on_sample = move |_| {
@@ -165,12 +170,15 @@ pub fn OutputPanel() -> impl IntoView {
                         sample.set(None);
                         return;
                     }
-                    let idx = mix_seed(seed.get()) % c;
+                    let s = internal_seed.get_value();
+                    let idx = mix_seed(s) % c;
                     if let Some(arr) = p.at(idx) {
                         sample.set(Some((idx, arr)));
                     }
+                    let next = advance_seed(s);
+                    internal_seed.set_value(next);
                     if advance.get() {
-                        seed.update(|s| *s = advance_seed(*s));
+                        seed.set(next);
                     }
                 };
 
