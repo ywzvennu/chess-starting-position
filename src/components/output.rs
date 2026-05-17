@@ -17,6 +17,8 @@ pub fn OutputPanel() -> impl IntoView {
     let index = RwSignal::new(0u64);
     let seed = RwSignal::new(0u64);
     let advance = RwSignal::new(false);
+    let copied_index = RwSignal::new(false);
+    let copied_sample = RwSignal::new(false);
 
     Effect::new(move |_| {
         let c = count.get();
@@ -38,12 +40,15 @@ pub fn OutputPanel() -> impl IntoView {
     });
 
     let sample = Signal::derive(move || {
-        let c = count.get();
-        if c == 0 {
+        if count.get() == 0 {
             return None;
         }
-        let idx = seed.get() % c;
-        problem().at(idx).map(|arr| (idx, arr))
+        let p = problem();
+        let s = seed.get();
+        p.sample(s).map(|arr| {
+            let idx = p.iter().position(|a| a == arr).map(|i| i as u64).unwrap_or(0);
+            (idx, arr)
+        })
     });
 
     let sample_arrangement = Signal::derive(move || {
@@ -170,7 +175,7 @@ pub fn OutputPanel() -> impl IntoView {
                             </span>
                         </div>
                         <Board pieces=indexed_arrangement/>
-                        <BoardActions pieces=indexed_arrangement/>
+                        <BoardActions pieces=indexed_arrangement copied=copied_index/>
                     </div>
 
                     <div class="output-block">
@@ -199,7 +204,7 @@ pub fn OutputPanel() -> impl IntoView {
                             </label>
                         </div>
                         <Board pieces=sample_arrangement/>
-                        <BoardActions pieces=sample_arrangement/>
+                        <BoardActions pieces=sample_arrangement copied=copied_sample/>
                         <p class="sample-meta">
                             {move || match sample.get() {
                                 Some((idx, _)) => match sample_sp_id.get() {

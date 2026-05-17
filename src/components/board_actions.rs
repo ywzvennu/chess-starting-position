@@ -3,7 +3,10 @@ use chess_startpos_rs::chess::Piece;
 use leptos::prelude::*;
 
 #[component]
-pub fn BoardActions(#[prop(into)] pieces: Signal<Vec<Piece>>) -> impl IntoView {
+pub fn BoardActions(
+    #[prop(into)] pieces: Signal<Vec<Piece>>,
+    copied: RwSignal<bool>,
+) -> impl IntoView {
     let fen = Signal::derive(move || {
         let p = pieces.get();
         if p.len() == 8 {
@@ -18,7 +21,6 @@ pub fn BoardActions(#[prop(into)] pieces: Signal<Vec<Piece>>) -> impl IntoView {
             .unwrap_or_else(|| "https://lichess.org/editor".to_string())
     };
 
-    let copied = RwSignal::new(false);
     let on_copy = move |_| {
         let Some(text) = fen.get() else { return; };
         copy_to_clipboard(&text);
