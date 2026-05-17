@@ -1,5 +1,6 @@
 use crate::components::board::Board;
-use crate::state::{build_problem, is_chess_960, AppState};
+use crate::components::board_actions::BoardActions;
+use crate::state::{build_problem, is_chess_960, AppState, Orientation};
 use chess_startpos_rs::chess;
 use leptos::prelude::*;
 
@@ -8,6 +9,7 @@ pub fn OutputPanel() -> impl IntoView {
     let state = expect_context::<AppState>();
     let alphabet = state.alphabet;
     let root_constraint = state.root_constraint;
+    let orientation = state.orientation;
 
     let problem = move || build_problem(alphabet.get(), root_constraint.get());
     let count = Memo::new(move |_| problem().count());
@@ -16,7 +18,6 @@ pub fn OutputPanel() -> impl IntoView {
     let seed = RwSignal::new(0u64);
     let advance = RwSignal::new(false);
 
-    // Clamp the index when the count drops below it.
     Effect::new(move |_| {
         let c = count.get();
         index.update(|i| {
@@ -60,10 +61,33 @@ pub fn OutputPanel() -> impl IntoView {
     });
 
     view! {
-        <dl class="stats">
-            <dt>"Count"</dt>
-            <dd>{move || count.get()}</dd>
-        </dl>
+        <div class="results-toolbar">
+            <dl class="stats">
+                <dt>"Count"</dt>
+                <dd>{move || count.get()}</dd>
+            </dl>
+            <fieldset class="orientation-toggle">
+                <legend>"Orientation"</legend>
+                <label>
+                    <input
+                        type="radio"
+                        name="orientation"
+                        prop:checked=move || matches!(orientation.get(), Orientation::White)
+                        on:change=move |_| orientation.set(Orientation::White)
+                    />
+                    <span>"White"</span>
+                </label>
+                <label>
+                    <input
+                        type="radio"
+                        name="orientation"
+                        prop:checked=move || matches!(orientation.get(), Orientation::Black)
+                        on:change=move |_| orientation.set(Orientation::Black)
+                    />
+                    <span>"Black"</span>
+                </label>
+            </fieldset>
+        </div>
 
         {move || {
             if count.get() == 0 {
@@ -108,7 +132,6 @@ pub fn OutputPanel() -> impl IntoView {
                     if advance.get() {
                         seed.update(|s| *s = advance_seed(*s));
                     } else {
-                        // Re-notify even when the seed is unchanged so the derived sample re-renders.
                         seed.update(|_| {});
                     }
                 };
@@ -147,6 +170,7 @@ pub fn OutputPanel() -> impl IntoView {
                             </span>
                         </div>
                         <Board pieces=indexed_arrangement/>
+                        <BoardActions pieces=indexed_arrangement/>
                     </div>
 
                     <div class="output-block">
@@ -175,6 +199,7 @@ pub fn OutputPanel() -> impl IntoView {
                             </label>
                         </div>
                         <Board pieces=sample_arrangement/>
+                        <BoardActions pieces=sample_arrangement/>
                         <p class="sample-meta">
                             {move || match sample.get() {
                                 Some((idx, _)) => match sample_sp_id.get() {

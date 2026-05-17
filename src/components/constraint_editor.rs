@@ -703,6 +703,5 @@ fn op_display(o: CountOp) -> &'static str {
 }
 
 fn square_label(s: usize) -> String {
-    let file = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][s % BOARD_SQUARES];
-    format!("{} ({})", s, file)
+    ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][s % BOARD_SQUARES].to_string()
 }

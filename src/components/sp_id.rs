@@ -1,4 +1,5 @@
 use crate::components::board::Board;
+use crate::components::board_actions::BoardActions;
 use crate::state::{is_chess_960, AppState};
 use chess_startpos_rs::chess;
 use leptos::prelude::*;
@@ -67,6 +68,7 @@ pub fn SpIdRoundTrip() -> impl IntoView {
                             </span>
                         </div>
                         <Board pieces=arrangement/>
+                        <BoardActions pieces=arrangement/>
                     </fieldset>
                 }
                 .into_any()
