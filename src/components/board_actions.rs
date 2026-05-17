@@ -51,9 +51,12 @@ pub fn BoardActions(
             >
                 "Lichess editor ↗"
             </a>
-            <code class="fen-preview">
-                {move || fen.get().unwrap_or_default()}
-            </code>
+            <details class="fen-disclosure">
+                <summary>"FEN"</summary>
+                <code class="fen-preview">
+                    {move || fen.get().unwrap_or_default()}
+                </code>
+            </details>
         </div>
     }
 }

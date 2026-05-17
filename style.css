@@ -258,7 +258,7 @@ main {
 .board {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  max-width: 480px;
+  max-width: 360px;
   border: 1px solid var(--border);
   border-radius: 4px;
   overflow: hidden;
@@ -268,7 +268,7 @@ main {
   aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
-  font-size: clamp(1.5rem, 6vw, 2.4rem);
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
   color: var(--piece-color);
 }
 
@@ -560,8 +560,35 @@ main {
   color: var(--accent);
 }
 
-.fen-preview {
+.fen-disclosure {
   flex: 1 1 100%;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.fen-disclosure summary {
+  cursor: pointer;
+  display: inline-block;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--pane-bg);
+  color: var(--fg);
+  font-size: 0.82rem;
+  user-select: none;
+}
+
+.fen-disclosure summary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.fen-disclosure[open] summary {
+  margin-bottom: 0.3rem;
+}
+
+.fen-preview {
+  display: block;
   font-size: 0.75rem;
   color: var(--muted);
   word-break: break-all;
