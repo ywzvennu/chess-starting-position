@@ -20,8 +20,11 @@ opt-level = "z"
 lto = true
 codegen-units = 1
 
-# Optimise dependencies fully even in dev builds so the WASM bundle is small
-# enough for the browser to instantiate. Our own crate stays at opt-level = 0
-# for fast incremental rebuilds.
+# Keep dev WASM small enough for the browser to instantiate. Stripping debug
+# info accounts for most of the size; optimising deps is a smaller win.
+# console_error_panic_hook still maps panics to source lines via wasm-bindgen.
+[profile.dev]
+debug = false
+
 [profile.dev.package."*"]
 opt-level = 3
