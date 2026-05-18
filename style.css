@@ -75,7 +75,7 @@ button {
   min-height: 36px;
 }
 
-main {
+.app-main {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1.5rem 1.5rem 2rem;

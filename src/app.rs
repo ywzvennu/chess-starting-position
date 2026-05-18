@@ -30,6 +30,7 @@ pub fn App() -> impl IntoView {
     });
 
     view! {
+        <main class="app-main">
         <header class="app-header">
             <h1>"Chess Starting Position Explorer"</h1>
             <div class="header-controls">
@@ -99,5 +100,6 @@ pub fn App() -> impl IntoView {
                 <span>"chess-startpos-rs"</span>
             </a>
         </footer>
+        </main>
     }
 }
