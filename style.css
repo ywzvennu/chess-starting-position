@@ -63,6 +63,18 @@ body {
   color: var(--fg);
 }
 
+/* Mobile-friendliness: keep number inputs at >=16px so iOS doesn't zoom
+   in on focus; bump the minimum button height to avoid fat-finger misses
+   without changing desktop appearance. */
+input[type="number"],
+input[type="text"] {
+  font-size: 16px;
+}
+
+button {
+  min-height: 36px;
+}
+
 main {
   max-width: 1200px;
   margin: 0 auto;
