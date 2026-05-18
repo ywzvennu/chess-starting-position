@@ -191,6 +191,7 @@ pub fn OutputPanel() -> impl IntoView {
                                 <input
                                     type="number"
                                     min="0"
+                                    aria-label="Arrangement index"
                                     prop:value=move || index.get().to_string()
                                     prop:max=move || {
                                         let c = count.get();
@@ -233,6 +234,7 @@ pub fn OutputPanel() -> impl IntoView {
                                 <input
                                     type="number"
                                     min="0"
+                                    aria-label="Sampling seed"
                                     prop:value=move || seed.get().to_string()
                                     on:input=on_seed_input
                                 />
