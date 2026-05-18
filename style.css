@@ -570,12 +570,12 @@ main {
   display: flex;
   align-items: stretch;
   gap: 0.4rem;
-  width: 100%;
 }
 
 .fen-row .fen-preview {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 40ch;
   margin: 0;
 }
 
