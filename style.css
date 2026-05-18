@@ -560,10 +560,28 @@ main {
 
 .board-actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
   gap: 0.4rem;
   margin-top: 0.5rem;
+  align-items: flex-start;
+}
+
+.fen-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.fen-row .fen-preview {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.fen-row .action-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .action-btn {
@@ -583,33 +601,6 @@ main {
   color: var(--accent);
 }
 
-.fen-disclosure {
-  flex: 1 1 100%;
-  font-size: 0.78rem;
-  color: var(--muted);
-}
-
-.fen-disclosure summary {
-  cursor: pointer;
-  display: inline-block;
-  padding: 0.2rem 0.4rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--pane-bg);
-  color: var(--fg);
-  font-size: 0.82rem;
-  user-select: none;
-}
-
-.fen-disclosure summary:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.fen-disclosure[open] summary {
-  margin-bottom: 0.3rem;
-}
-
 .fen-preview {
   display: block;
   font-size: 0.75rem;
@@ -618,8 +609,9 @@ main {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 0.25rem 0.4rem;
+  padding: 0.3rem 0.5rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  line-height: 1.4;
 }
 
 .constraint-editor {
