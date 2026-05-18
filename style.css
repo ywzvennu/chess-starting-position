@@ -575,7 +575,7 @@ main {
 .fen-row .fen-preview {
   flex: 0 1 auto;
   min-width: 0;
-  max-width: 40ch;
+  max-width: 56ch;
   margin: 0;
 }
 
