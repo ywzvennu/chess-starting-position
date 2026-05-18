@@ -265,11 +265,10 @@ main {
 }
 
 .stats {
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 0.25rem 0.75rem;
-  margin: 0 0 0.75rem;
+  display: flex;
   align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
 }
 
 .stats dt {
@@ -286,7 +285,8 @@ main {
 .board {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  max-width: 360px;
+  width: 100%;
+  max-width: 56ch;
   border: 1px solid var(--border);
   border-radius: 4px;
   overflow: hidden;
@@ -562,22 +562,21 @@ main {
   gap: 0.4rem;
   margin-top: 0.5rem;
   align-items: flex-start;
-}
-
-.fen-row {
-  display: flex;
-  align-items: stretch;
-  gap: 0.4rem;
-}
-
-.fen-row .fen-preview {
-  flex: 0 1 auto;
-  min-width: 0;
+  width: 100%;
   max-width: 56ch;
+}
+
+.board-actions .fen-preview {
+  width: 100%;
   margin: 0;
 }
 
-.fen-row .action-btn {
+.fen-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.fen-actions .action-btn {
   flex: 0 0 auto;
   white-space: nowrap;
 }

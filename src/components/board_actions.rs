@@ -33,10 +33,10 @@ pub fn BoardActions(
 
     view! {
         <div class="board-actions">
-            <div class="fen-row">
-                <code class="fen-preview">
-                    {move || fen.get().unwrap_or_default()}
-                </code>
+            <code class="fen-preview">
+                {move || fen.get().unwrap_or_default()}
+            </code>
+            <div class="fen-actions">
                 <button
                     type="button"
                     class="action-btn"
@@ -45,16 +45,16 @@ pub fn BoardActions(
                 >
                     {move || if copied.get() { "Copied" } else { "Copy FEN" }}
                 </button>
+                <a
+                    class="action-btn"
+                    href=lichess_href
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open this position in the Lichess board editor"
+                >
+                    "Lichess editor ↗"
+                </a>
             </div>
-            <a
-                class="action-btn lichess-btn"
-                href=lichess_href
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Open this position in the Lichess board editor"
-            >
-                "Lichess editor ↗"
-            </a>
         </div>
     }
 }
