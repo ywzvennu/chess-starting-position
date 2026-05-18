@@ -284,3 +284,48 @@ fn mix_seed(seed: u64) -> u64 {
     x = (x ^ (x >> 27)).wrapping_mul(0x94D049BB133111EB);
     x ^ (x >> 31)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mix_seed_is_deterministic() {
+        assert_eq!(mix_seed(42), mix_seed(42));
+        assert_eq!(mix_seed(0), mix_seed(0));
+    }
+
+    #[test]
+    fn mix_seed_differs_for_adjacent_seeds() {
+        // Three adjacent inputs should not collide.
+        let outputs: Vec<u64> = (0..3).map(mix_seed).collect();
+        assert_ne!(outputs[0], outputs[1]);
+        assert_ne!(outputs[1], outputs[2]);
+        assert_ne!(outputs[0], outputs[2]);
+    }
+
+    #[test]
+    fn mix_seed_avoids_trivial_linearity() {
+        // For a trivial `seed % count` mapping the differences would be 1.
+        // SplitMix64 should not produce a constant difference across adjacent
+        // inputs.
+        let a = mix_seed(0);
+        let b = mix_seed(1);
+        let c = mix_seed(2);
+        let d1 = b.wrapping_sub(a);
+        let d2 = c.wrapping_sub(b);
+        assert_ne!(d1, d2, "mix_seed should not be a linear function of input");
+    }
+
+    #[test]
+    fn advance_seed_changes_value() {
+        assert_ne!(advance_seed(0), 0);
+        let s = 1234567;
+        assert_ne!(advance_seed(s), s);
+    }
+
+    #[test]
+    fn advance_seed_is_deterministic() {
+        assert_eq!(advance_seed(42), advance_seed(42));
+    }
+}
