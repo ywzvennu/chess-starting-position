@@ -19,3 +19,9 @@ serde_json = "1"
 opt-level = "z"
 lto = true
 codegen-units = 1
+
+# Optimise dependencies fully even in dev builds so the WASM bundle is small
+# enough for the browser to instantiate. Our own crate stays at opt-level = 0
+# for fast incremental rebuilds.
+[profile.dev.package."*"]
+opt-level = 3
