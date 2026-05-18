@@ -151,8 +151,10 @@ pub fn OutputPanel() -> impl IntoView {
                 let on_index_input = move |ev: leptos::ev::Event| {
                     let raw = event_target_value(&ev);
                     if let Ok(v) = raw.parse::<u64>() {
+                        // User-visible index is 1-based; internal index is 0-based.
+                        let zero_based = v.saturating_sub(1);
                         let c = count.get();
-                        let clamped = if c == 0 { 0 } else { v.min(c - 1) };
+                        let clamped = if c == 0 { 0 } else { zero_based.min(c - 1) };
                         index.set(clamped);
                     }
                 };
@@ -190,13 +192,10 @@ pub fn OutputPanel() -> impl IntoView {
                                 <span>"Index"</span>
                                 <input
                                     type="number"
-                                    min="0"
+                                    min="1"
                                     aria-label="Arrangement index"
-                                    prop:value=move || index.get().to_string()
-                                    prop:max=move || {
-                                        let c = count.get();
-                                        if c == 0 { "0".to_string() } else { (c - 1).to_string() }
-                                    }
+                                    prop:value=move || (index.get() + 1).to_string()
+                                    prop:max=move || count.get().to_string()
                                     on:input=on_index_input
                                 />
                             </label>
@@ -257,8 +256,8 @@ pub fn OutputPanel() -> impl IntoView {
                         <p class="sample-meta">
                             {move || match sample.get() {
                                 Some((idx, _)) => match sample_sp_id.get() {
-                                    Some(sp) => format!("Index {} · SP-ID {}", idx, sp),
-                                    None => format!("Index {}", idx),
+                                    Some(sp) => format!("Index {} · SP-ID {}", idx + 1, sp),
+                                    None => format!("Index {}", idx + 1),
                                 },
                                 None => String::new(),
                             }}
