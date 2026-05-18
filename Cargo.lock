@@ -143,7 +143,10 @@ version = "0.1.0"
 dependencies = [
  "chess-startpos-rs",
  "console_error_panic_hook",
+ "js-sys",
  "leptos",
+ "serde_json",
+ "wasm-bindgen",
  "web-sys",
 ]
 

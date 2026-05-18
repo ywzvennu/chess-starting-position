@@ -2,14 +2,31 @@ use crate::components::alphabet::AlphabetSelector;
 use crate::components::constraint_editor::ConstraintEditor;
 use crate::components::output::OutputPanel;
 use crate::components::presets::PresetButtons;
-use crate::state::AppState;
+use crate::state::{read_url_state, write_url_state, AppState};
 use crate::theme::ThemeToggle;
 use leptos::prelude::*;
 
 #[component]
 pub fn App() -> impl IntoView {
     let state = AppState::new();
+
+    // Hydrate from the URL hash before any reactive subscribers wire up so the
+    // initial paint already shows the shared state.
+    if let Some((alphabet, root)) = read_url_state() {
+        state.alphabet.set(alphabet);
+        state.root_constraint.set(root);
+    }
+
     provide_context(state);
+
+    // Mirror live state into the URL hash on every change after mount.
+    Effect::new(move |prev: Option<()>| {
+        let alphabet = state.alphabet.get();
+        let root = state.root_constraint.get();
+        if prev.is_some() {
+            write_url_state(&alphabet, &root);
+        }
+    });
 
     view! {
         <header class="app-header">
