@@ -33,16 +33,21 @@ pub fn BoardActions(
 
     view! {
         <div class="board-actions">
-            <button
-                type="button"
-                class="action-btn"
-                on:click=on_copy
-                title="Copy FEN to clipboard"
-            >
-                {move || if copied.get() { "Copied" } else { "Copy FEN" }}
-            </button>
+            <div class="fen-row">
+                <code class="fen-preview">
+                    {move || fen.get().unwrap_or_default()}
+                </code>
+                <button
+                    type="button"
+                    class="action-btn"
+                    on:click=on_copy
+                    title="Copy FEN to clipboard"
+                >
+                    {move || if copied.get() { "Copied" } else { "Copy FEN" }}
+                </button>
+            </div>
             <a
-                class="action-btn"
+                class="action-btn lichess-btn"
                 href=lichess_href
                 target="_blank"
                 rel="noopener noreferrer"
@@ -50,12 +55,6 @@ pub fn BoardActions(
             >
                 "Lichess editor ↗"
             </a>
-            <details class="fen-disclosure">
-                <summary>"FEN"</summary>
-                <code class="fen-preview">
-                    {move || fen.get().unwrap_or_default()}
-                </code>
-            </details>
         </div>
     }
 }
