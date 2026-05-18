@@ -1,6 +1,6 @@
 use crate::components::board::Board;
 use crate::components::board_actions::BoardActions;
-use crate::state::{build_problem, is_chess_960, AppState, Orientation};
+use crate::state::{build_problem, is_chess_960, AppState};
 use chess_startpos_rs::chess::{self, Piece};
 use leptos::prelude::*;
 
@@ -9,7 +9,6 @@ pub fn OutputPanel() -> impl IntoView {
     let state = expect_context::<AppState>();
     let alphabet = state.alphabet;
     let root_constraint = state.root_constraint;
-    let orientation = state.orientation;
 
     let problem = move || build_problem(alphabet.get(), root_constraint.get());
     let count = Memo::new(move |_| problem().count());
@@ -98,30 +97,10 @@ pub fn OutputPanel() -> impl IntoView {
     });
 
     view! {
-        <div class="results-toolbar">
-            <dl class="stats">
-                <dt>"Count"</dt>
-                <dd>{move || count.get()}</dd>
-            </dl>
-            <div class="orientation-toggle" role="group" aria-label="Board orientation">
-                <button
-                    type="button"
-                    class:selected=move || matches!(orientation.get(), Orientation::White)
-                    aria-pressed=move || if matches!(orientation.get(), Orientation::White) { "true" } else { "false" }
-                    on:click=move |_| orientation.set(Orientation::White)
-                >
-                    "White"
-                </button>
-                <button
-                    type="button"
-                    class:selected=move || matches!(orientation.get(), Orientation::Black)
-                    aria-pressed=move || if matches!(orientation.get(), Orientation::Black) { "true" } else { "false" }
-                    on:click=move |_| orientation.set(Orientation::Black)
-                >
-                    "Black"
-                </button>
-            </div>
-        </div>
+        <dl class="stats">
+            <dt>"Count"</dt>
+            <dd>{move || count.get()}</dd>
+        </dl>
 
         {move || {
             if count.get() == 0 {

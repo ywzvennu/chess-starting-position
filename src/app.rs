@@ -1,5 +1,6 @@
 use crate::components::alphabet::AlphabetSelector;
 use crate::components::constraint_editor::ConstraintEditor;
+use crate::components::orientation::OrientationToggle;
 use crate::components::output::OutputPanel;
 use crate::components::presets::PresetButtons;
 use crate::state::{read_url_state, write_url_state, AppState};
@@ -31,7 +32,10 @@ pub fn App() -> impl IntoView {
     view! {
         <header class="app-header">
             <h1>"Chess Starting Position Explorer"</h1>
-            <ThemeToggle/>
+            <div class="header-controls">
+                <OrientationToggle/>
+                <ThemeToggle/>
+            </div>
         </header>
 
         <section class="intro" aria-label="About">
