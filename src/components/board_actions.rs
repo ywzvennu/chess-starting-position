@@ -23,13 +23,12 @@ pub fn BoardActions(
     };
 
     let on_copy = move |_| {
-        let Some(text) = fen.get() else { return; };
+        let Some(text) = fen.get() else {
+            return;
+        };
         copy_to_clipboard(&text);
         copied.set(true);
-        set_timeout(
-            move || copied.set(false),
-            Duration::from_millis(1000),
-        );
+        set_timeout(move || copied.set(false), Duration::from_millis(1000));
     };
 
     view! {

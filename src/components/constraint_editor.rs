@@ -35,12 +35,8 @@ fn render_node(
     alphabet: Signal<Vec<Piece>>,
 ) -> AnyView {
     match node {
-        Constraint::And(children) => {
-            render_combinator("And", children, replace, remove, alphabet)
-        }
-        Constraint::Or(children) => {
-            render_combinator("Or", children, replace, remove, alphabet)
-        }
+        Constraint::And(children) => render_combinator("And", children, replace, remove, alphabet),
+        Constraint::Or(children) => render_combinator("Or", children, replace, remove, alphabet),
         Constraint::Not(child) => render_not(*child, replace, remove, alphabet),
         leaf => render_leaf(leaf, replace, remove, alphabet),
     }
@@ -64,7 +60,6 @@ fn render_combinator(
         .map({
             let outer = children.clone();
             let replace = Rc::clone(&replace);
-            let kind = kind;
             move |(i, child)| {
                 // Replacer for this child: rebuilds the parent combinator with the child slot updated.
                 let child_replace: Replacer = {
@@ -130,7 +125,6 @@ fn render_combinator(
                         on_add=Rc::new({
                             let replace = Rc::clone(&replace);
                             let children = children.clone();
-                            let kind = kind;
                             move |c: ChessConstraint| {
                                 let mut next = children.clone();
                                 next.push(c);
@@ -275,10 +269,7 @@ fn rebuild_combinator(kind: &str, children: Vec<ChessConstraint>) -> ChessConstr
 }
 
 #[component]
-fn CombinatorKindSelect(
-    value: &'static str,
-    on_change: Box<dyn Fn(&str)>,
-) -> impl IntoView {
+fn CombinatorKindSelect(value: &'static str, on_change: Box<dyn Fn(&str)>) -> impl IntoView {
     view! {
         <select
             class="combinator-select"
@@ -298,12 +289,32 @@ fn CombinatorKindSelect(
 fn AddLeafMenu(first_piece: Piece, on_add: Rc<dyn Fn(ChessConstraint)>) -> impl IntoView {
     let mk = move |kind: &str| -> Option<ChessConstraint> {
         Some(match kind {
-            "count" => Constraint::Count { piece: first_piece, op: CountOp::Eq, value: 1 },
-            "ccolor" => Constraint::CountOnColor { piece: first_piece, color: SquareColor::Light, op: CountOp::Eq, value: 1 },
-            "at" => Constraint::At { piece: first_piece, square: 0 },
-            "notat" => Constraint::NotAt { piece: first_piece, square: 0 },
+            "count" => Constraint::Count {
+                piece: first_piece,
+                op: CountOp::Eq,
+                value: 1,
+            },
+            "ccolor" => Constraint::CountOnColor {
+                piece: first_piece,
+                color: SquareColor::Light,
+                op: CountOp::Eq,
+                value: 1,
+            },
+            "at" => Constraint::At {
+                piece: first_piece,
+                square: 0,
+            },
+            "notat" => Constraint::NotAt {
+                piece: first_piece,
+                square: 0,
+            },
             "order" => Constraint::Order(vec![(first_piece, 0), (first_piece, 1)]),
-            "relative" => Constraint::Relative { lhs: (first_piece, 0), rhs: (first_piece, 1), op: CountOp::Lt, offset: 0 },
+            "relative" => Constraint::Relative {
+                lhs: (first_piece, 0),
+                rhs: (first_piece, 1),
+                op: CountOp::Lt,
+                offset: 0,
+            },
             "and" => Constraint::And(Vec::new()),
             "or" => Constraint::Or(Vec::new()),
             "not" => Constraint::Not(Box::new(Constraint::And(Vec::new()))),
@@ -358,7 +369,12 @@ fn render_leaf_body(
                 </div>
             }.into_any()
         }
-        Constraint::CountOnColor { piece, color, op, value } => {
+        Constraint::CountOnColor {
+            piece,
+            color,
+            op,
+            value,
+        } => {
             let r1 = Rc::clone(&r);
             let r2 = Rc::clone(&r);
             let r3 = Rc::clone(&r);
@@ -386,7 +402,8 @@ fn render_leaf_body(
                     <SquareSelect value=square
                         on_change=Box::new(move |s| r2(Constraint::At { piece, square: s }))/>
                 </div>
-            }.into_any()
+            }
+            .into_any()
         }
         Constraint::NotAt { piece, square } => {
             let r1 = Rc::clone(&r);
@@ -398,7 +415,8 @@ fn render_leaf_body(
                     <SquareSelect value=square
                         on_change=Box::new(move |s| r2(Constraint::NotAt { piece, square: s }))/>
                 </div>
-            }.into_any()
+            }
+            .into_any()
         }
         Constraint::Order(items) => {
             let len = items.len();
@@ -452,7 +470,12 @@ fn render_leaf_body(
                 </div>
             }.into_any()
         }
-        Constraint::Relative { lhs, rhs, op, offset } => {
+        Constraint::Relative {
+            lhs,
+            rhs,
+            op,
+            offset,
+        } => {
             let r1 = Rc::clone(&r);
             let r2 = Rc::clone(&r);
             let r3 = Rc::clone(&r);
@@ -489,7 +512,8 @@ fn render_leaf_body(
         }
         other => view! {
             <div class="row-body"><pre class="composite-pre">{format!("{:#?}", other)}</pre></div>
-        }.into_any(),
+        }
+        .into_any(),
     }
 }
 
@@ -512,7 +536,11 @@ fn PieceSelect(
     on_change: Box<dyn Fn(Piece)>,
 ) -> impl IntoView {
     let in_alphabet = alphabet.with(|a| a.contains(&value));
-    let class = if in_alphabet { "piece-select" } else { "piece-select invalid" };
+    let class = if in_alphabet {
+        "piece-select"
+    } else {
+        "piece-select invalid"
+    };
 
     view! {
         <select
