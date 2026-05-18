@@ -229,7 +229,7 @@ main {
 
 @media (min-width: 768px) {
   .layout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   }
 }
 
