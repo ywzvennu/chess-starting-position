@@ -20,13 +20,12 @@ pub fn App() -> impl IntoView {
 
     provide_context(state);
 
-    // Mirror live state into the URL hash on every change after mount.
-    Effect::new(move |prev: Option<()>| {
+    // Mirror live state into the URL hash on every change, including the
+    // initial mount so a fresh page always has a shareable URL.
+    Effect::new(move |_| {
         let alphabet = state.alphabet.get();
         let root = state.root_constraint.get();
-        if prev.is_some() {
-            write_url_state(&alphabet, &root);
-        }
+        write_url_state(&alphabet, &root);
     });
 
     view! {
