@@ -74,3 +74,57 @@ pub fn is_chess_960(alphabet: &[Piece], root: &ChessConstraint) -> bool {
     let canonical = chess::chess_960().into_problem();
     alphabet == canonical.pieces.as_slice() && root == &canonical.constraint
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chess_startpos_rs::chess;
+
+    #[test]
+    fn fen_for_standard_fide_position() {
+        let arr = chess::chess_960()
+            .sp_id(518)
+            .expect("sp_id 518 is the standard FIDE position");
+        assert_eq!(
+            fen_for_arrangement(&arr),
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1"
+        );
+    }
+
+    #[test]
+    fn fen_for_all_kings_arrangement() {
+        let arr = vec![Piece::King; BOARD_SQUARES];
+        assert_eq!(
+            fen_for_arrangement(&arr),
+            "kkkkkkkk/pppppppp/8/8/8/8/PPPPPPPP/KKKKKKKK w - - 0 1"
+        );
+    }
+
+    #[test]
+    fn lichess_url_replaces_spaces_with_underscores() {
+        let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1";
+        assert_eq!(
+            lichess_editor_url(fen),
+            "https://lichess.org/editor/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_-_-_0_1"
+        );
+    }
+
+    #[test]
+    fn is_chess_960_recognises_canonical_problem() {
+        let canonical = chess::chess_960().into_problem();
+        assert!(is_chess_960(&canonical.pieces, &canonical.constraint));
+    }
+
+    #[test]
+    fn is_chess_960_rejects_shuffle_preset() {
+        let shuffle = chess::shuffle();
+        assert!(!is_chess_960(&shuffle.pieces, &shuffle.constraint));
+    }
+
+    #[test]
+    fn is_chess_960_rejects_empty_constraint() {
+        let canonical = chess::chess_960().into_problem();
+        let empty_root = Constraint::And(Vec::new());
+        assert!(!is_chess_960(&canonical.pieces, &empty_root));
+    }
+}
