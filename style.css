@@ -450,7 +450,7 @@ main {
 }
 
 .output-controls input[type="number"] {
-  width: 9ch;
+  width: 13ch;
   padding: 0.25rem 0.4rem;
   border: 1px solid var(--border);
   border-radius: 4px;
