@@ -75,6 +75,39 @@ pub fn is_chess_960(alphabet: &[Piece], root: &ChessConstraint) -> bool {
     alphabet == canonical.pieces.as_slice() && root == &canonical.constraint
 }
 
+const URL_HASH_PREFIX: &str = "#c=";
+
+/// Read the active (alphabet, root constraint) state from the location hash.
+/// Returns `None` if no hash payload is present or it fails to parse.
+pub fn read_url_state() -> Option<(Vec<Piece>, ChessConstraint)> {
+    let win = web_sys::window()?;
+    let hash = win.location().hash().ok()?;
+    let payload = hash.strip_prefix(URL_HASH_PREFIX)?;
+    let decoded = js_sys::decode_uri_component(payload).ok()?.as_string()?;
+    serde_json::from_str::<(Vec<Piece>, ChessConstraint)>(&decoded).ok()
+}
+
+/// Mirror the current state into the URL hash via `history.replaceState`,
+/// so the URL always reflects the live problem without polluting back-button
+/// history. Silently no-ops on browsers/environments where window/history is
+/// unavailable.
+pub fn write_url_state(alphabet: &[Piece], root: &ChessConstraint) {
+    let Some(win) = web_sys::window() else {
+        return;
+    };
+    let payload: (Vec<Piece>, ChessConstraint) = (alphabet.to_vec(), root.clone());
+    let Ok(json) = serde_json::to_string(&payload) else {
+        return;
+    };
+    let encoded = js_sys::encode_uri_component(&json)
+        .as_string()
+        .unwrap_or_default();
+    let hash = format!("{}{}", URL_HASH_PREFIX, encoded);
+    if let Ok(history) = win.history() {
+        let _ = history.replace_state_with_url(&wasm_bindgen::JsValue::null(), "", Some(&hash));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
