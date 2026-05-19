@@ -354,13 +354,22 @@ button {
   background: var(--square-dark);
 }
 
-.glyph,
+.glyph {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+.glyph svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .loading-glyph {
-  /* Chess symbols (U+2654–U+265F) render condensed in many UI fonts.
-     Prefer a font stack with well-proportioned symbol glyphs. */
+  /* Unicode king fallback used only for the brief pre-mount placeholder. */
   font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2",
     "Noto Sans Symbols", "DejaVu Sans", serif;
-  font-feature-settings: normal;
   font-stretch: normal;
   line-height: 1;
 }
@@ -407,22 +416,18 @@ button {
 }
 
 .alphabet-pill .glyph {
-  font-size: 1.2rem;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: grid;
-  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 3px;
+  padding: 1px;
 }
 
 .alphabet-pill .glyph.swatch-light {
   background: var(--square-light);
-  color: #1a1a1a;
 }
 
 .alphabet-pill .glyph.swatch-dark {
   background: var(--square-dark);
-  color: #f5f5f5;
 }
 
 .empty {

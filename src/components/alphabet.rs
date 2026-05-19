@@ -1,3 +1,4 @@
+use crate::pieces::piece_svg;
 use crate::state::{AppState, Orientation, ALL_PIECES};
 use chess_startpos_rs::chess::Piece;
 use leptos::prelude::*;
@@ -27,7 +28,7 @@ pub fn AlphabetSelector() -> impl IntoView {
                             }
                         });
                     };
-                    let glyph = move || piece_glyph(p, orientation.get());
+                    let svg = move || piece_svg(p, orientation.get());
                     let swatch_class = move || match orientation.get() {
                         Orientation::White => "glyph swatch-dark",
                         Orientation::Black => "glyph swatch-light",
@@ -39,28 +40,13 @@ pub fn AlphabetSelector() -> impl IntoView {
                                 prop:checked=checked
                                 on:change=on_change
                             />
-                            <span class=swatch_class>{glyph}</span>
+                            <span class=swatch_class inner_html=svg></span>
                             <span>{piece_label(p)}</span>
                         </label>
                     }
                 }).collect_view()}
             </div>
         </fieldset>
-    }
-}
-
-fn piece_glyph(p: Piece, orient: Orientation) -> &'static str {
-    match (orient, p) {
-        (Orientation::White, Piece::King) => "♔",
-        (Orientation::White, Piece::Queen) => "♕",
-        (Orientation::White, Piece::Rook) => "♖",
-        (Orientation::White, Piece::Bishop) => "♗",
-        (Orientation::White, Piece::Knight) => "♘",
-        (Orientation::Black, Piece::King) => "♚",
-        (Orientation::Black, Piece::Queen) => "♛",
-        (Orientation::Black, Piece::Rook) => "♜",
-        (Orientation::Black, Piece::Bishop) => "♝",
-        (Orientation::Black, Piece::Knight) => "♞",
     }
 }
 
