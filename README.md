@@ -65,6 +65,10 @@ This UI is a thin shell around [`chess-startpos-rs`](https://github.com/ywzvennu
 - Docs: [docs.rs/chess-startpos-rs](https://docs.rs/chess-startpos-rs)
 - Source: [github.com/ywzvennu/chess-startpos-rs](https://github.com/ywzvennu/chess-startpos-rs)
 
+## Piece set attribution
+
+The chess piece SVGs under [`assets/pieces/`](assets/pieces/) are the **Cburnett** set by Colin M. L. Burnett, licensed under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) (and dual-licensed under GFDL). See [`assets/pieces/README.md`](assets/pieces/README.md) for details.
+
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+MIT for the project code (Rust, CSS, HTML, build config). The bundled SVG piece set carries its own CC BY-SA 3.0 license — see above. See [`LICENSE`](LICENSE).

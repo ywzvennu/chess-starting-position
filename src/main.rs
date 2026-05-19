@@ -1,5 +1,6 @@
 mod app;
 mod components;
+mod pieces;
 mod state;
 mod theme;
 
