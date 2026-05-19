@@ -145,16 +145,17 @@ input[type="text"] {
   font-size: 16px;
 }
 
-/* Hide the native browser spinner on number inputs. The dedicated ◀ / ▶
-   stepper buttons (and the ← / → keyboard shortcuts) are the affordance
-   for stepping; the native chevrons are tiny, browser-styled, and
-   effectively invisible on touch. */
-input[type="number"] {
+/* Hide the native browser spinner only on the output-pane numeric inputs.
+   The By Index field has dedicated ◀ / ▶ stepper buttons + ← / → keyboard
+   shortcuts; the Seed field's u64 range makes ±1 stepping pointless. The
+   constraint editor's inputs keep the native spinner — there's no
+   dedicated stepper there and ±1 is the natural delta. */
+.output-controls input[type="number"] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+.output-controls input[type="number"]::-webkit-inner-spin-button,
+.output-controls input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -844,7 +845,9 @@ button {
 }
 
 .row-body input[type="number"] {
-  width: 5ch;
+  /* Wide enough for a 2-digit value plus the native spinner column
+     that the browser draws on the right side of the input. */
+  width: 6ch;
   font-variant-numeric: tabular-nums;
 }
 
