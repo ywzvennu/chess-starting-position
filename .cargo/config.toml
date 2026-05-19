@@ -1,0 +1,7 @@
+# Cap WASM linear memory at 64 MB so browsers don't reserve the default 4 GB
+# of virtual address space per instance. The app's working set is well under
+# this; growing past it would trap at runtime.
+[target.wasm32-unknown-unknown]
+rustflags = [
+    "-C", "link-arg=--max-memory=67108864",
+]
