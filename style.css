@@ -187,8 +187,13 @@ button {
 .theme-button {
   display: inline-flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.4rem;
   padding: 0.35rem 0.6rem;
+  /* Wide enough to fit the longest menu item ("✓ ☾ System") so the
+     dropdown below (which inherits `min-width: 100%`) lines up
+     without wrapping its labels. */
+  min-width: 7.5rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--pane-bg);
