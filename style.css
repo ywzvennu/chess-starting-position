@@ -219,7 +219,7 @@ button {
   background: var(--pane-bg);
   border: 1px solid var(--border);
   border-radius: 6px;
-  min-width: 140px;
+  min-width: 100%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
