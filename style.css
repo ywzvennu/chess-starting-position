@@ -80,6 +80,52 @@ body {
   letter-spacing: 0.03em;
 }
 
+#panic-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+#panic-overlay .panic-card {
+  background: var(--pane-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid #c0392b;
+  border-radius: 8px;
+  padding: 1.5rem 1.75rem;
+  max-width: 32rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+
+#panic-overlay strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+  color: var(--fg);
+}
+
+#panic-overlay p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+#panic-overlay button {
+  padding: 0.4rem 1.1rem;
+  background: var(--accent);
+  color: var(--pane-bg);
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  min-height: 36px;
+}
+
 #loading .loading-glyph {
   font-size: 1.8rem;
   color: var(--accent);
