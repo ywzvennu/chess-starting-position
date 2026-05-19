@@ -253,6 +253,16 @@ button {
   height: 16px;
 }
 
+.footer-version {
+  margin-left: auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.footer-version:hover {
+  color: var(--accent);
+}
+
 .layout {
   display: grid;
   gap: 1.5rem;
