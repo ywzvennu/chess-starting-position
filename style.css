@@ -608,6 +608,9 @@ button {
 .output-controls input[type="number"] {
   width: 13ch;
   padding: 0.25rem 0.4rem;
+  /* Match the adjacent ◀ ▶ / Sample buttons (`button { min-height: 36px }`)
+     so the field and its stepper line up on a single row baseline. */
+  min-height: 36px;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--pane-bg);
