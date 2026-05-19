@@ -24,11 +24,19 @@ impl Theme {
         }
     }
 
-    pub fn label(self) -> &'static str {
+    pub fn icon(self) -> &'static str {
+        match self {
+            Theme::System => "◐",
+            Theme::Light => "☀",
+            Theme::Dark => "☾",
+        }
+    }
+
+    pub fn name(self) -> &'static str {
         match self {
             Theme::System => "System",
-            Theme::Light => "☀ Light",
-            Theme::Dark => "☾ Dark",
+            Theme::Light => "Light",
+            Theme::Dark => "Dark",
         }
     }
 }
@@ -88,7 +96,8 @@ pub fn ThemeToggle() -> impl IntoView {
                 aria-expanded=move || if open.get() { "true" } else { "false" }
                 on:click=move |_| open.update(|o| *o = !*o)
             >
-                <span>{move || theme.get().label()}</span>
+                <span class="theme-icon">{move || theme.get().icon()}</span>
+                <span class="theme-name">{move || theme.get().name()}</span>
                 <span class="caret">"▾"</span>
             </button>
             {move || {
@@ -114,7 +123,8 @@ pub fn ThemeToggle() -> impl IntoView {
                                             <span class="check">
                                                 {move || if selected() { "✓" } else { "" }}
                                             </span>
-                                            <span>{t.label()}</span>
+                                            <span class="theme-icon">{t.icon()}</span>
+                                            <span class="theme-name">{t.name()}</span>
                                         </button>
                                     </li>
                                 }
