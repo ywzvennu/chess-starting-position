@@ -39,12 +39,8 @@ pub fn App() -> impl IntoView {
         </header>
 
         <section class="intro" aria-label="About">
-            <p>
-                "Explore the space of chess starting positions under composable constraints. "
-                "Pick the piece kinds available to the problem, build a constraint tree (or "
-                "load a preset such as Chess-960), then count, browse, and sample, with "
-                "FIDE SP-ID lookup for Chess-960."
-            </p>
+            <p>"Explore the space of chess starting positions under composable constraints."</p>
+            <p>"Pick the piece kinds available to the problem, build a constraint tree or load a preset such as Chess-960, then count, browse, and sample."</p>
         </section>
 
         <div class="layout">
