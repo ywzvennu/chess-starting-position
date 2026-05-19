@@ -187,13 +187,11 @@ button {
 .theme-button {
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.4rem;
   padding: 0.35rem 0.6rem;
-  /* Wide enough to fit the longest menu item ("✓ ☾ System") so the
-     dropdown below (which inherits `min-width: 100%`) lines up
-     without wrapping its labels. */
-  min-width: 7.5rem;
+  /* Wide enough to fit the longest menu row so the dropdown below
+     (which inherits `min-width: 100%`) lines up without wrapping. */
+  min-width: 8.5rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--pane-bg);
@@ -201,6 +199,17 @@ button {
   cursor: pointer;
   font: inherit;
   font-size: 0.85rem;
+}
+
+.theme-button .theme-name {
+  flex: 1;
+  text-align: left;
+}
+
+.theme-icon {
+  width: 1.2em;
+  text-align: center;
+  flex: 0 0 auto;
 }
 
 .theme-button:hover {
@@ -235,6 +244,10 @@ button {
 .theme-menu button {
   display: flex;
   align-items: center;
+  /* Override the global `button { justify-content: center }` so menu
+     rows line up flush-left with a consistent check / icon / label
+     column layout. */
+  justify-content: flex-start;
   gap: 0.4rem;
   width: 100%;
   padding: 0.35rem 0.55rem;
@@ -260,6 +273,8 @@ button {
   width: 1ch;
   display: inline-block;
   color: var(--accent);
+  text-align: center;
+  flex: 0 0 auto;
 }
 
 .intro {
