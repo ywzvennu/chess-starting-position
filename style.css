@@ -145,6 +145,10 @@ input[type="text"] {
   font-size: 16px;
 }
 
+input[type="number"] {
+  text-align: right;
+}
+
 button {
   min-height: 36px;
   display: inline-flex;
