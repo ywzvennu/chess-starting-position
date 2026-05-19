@@ -3,6 +3,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    # SemVer-style release tags. Glob is `v[0-9]*.[0-9]*.[0-9]*` (minimatch,
+    # not regex), so `v1.2.3` matches and `vlatest`/`v-experimental` do not.
+    tags:
+      - 'v[0-9]*.[0-9]*.[0-9]*'
   pull_request:
     branches: [main]
   workflow_dispatch:
