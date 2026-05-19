@@ -630,6 +630,9 @@ button {
 }
 
 .action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.25rem 0.55rem;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -639,6 +642,7 @@ button {
   font: inherit;
   font-size: 0.82rem;
   text-decoration: none;
+  line-height: 1;
 }
 
 .action-btn:hover {
