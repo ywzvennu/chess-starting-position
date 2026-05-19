@@ -66,8 +66,42 @@ pub fn build_problem(alphabet: Vec<Piece>, constraint: ChessConstraint) -> Chess
         .squares(BOARD_SQUARES)
         .alternating_colors(SquareColor::Light, SquareColor::Dark)
         .pieces(alphabet)
-        .constraint(constraint)
+        .constraint(editor_simplify(constraint))
         .build()
+}
+
+/// Treat editor-time "in-progress placeholder" empties as no-ops, then run
+/// the upstream strict [`Constraint::simplify`].
+///
+/// Mid-edit users frequently leave an `Or([])` or `Not(empty)` in the tree
+/// they haven't filled in yet. Strict logical reading collapses the whole
+/// problem to unsatisfiable (count → 0), which is mathematically right but
+/// awful UX. This wrapper first rewrites every such empty branch to the
+/// vacuously-true `And([])`, then hands the result to `Constraint::simplify`
+/// which folds the resulting redundant structure.
+fn editor_simplify(constraint: ChessConstraint) -> ChessConstraint {
+    map_editor_noops(constraint).simplify()
+}
+
+fn map_editor_noops(c: ChessConstraint) -> ChessConstraint {
+    match c {
+        // Empty Or — editor placeholder, treat as vacuously true.
+        Constraint::Or(v) if v.is_empty() => Constraint::And(Vec::new()),
+        Constraint::And(v) => Constraint::And(v.into_iter().map(map_editor_noops).collect()),
+        Constraint::Or(v) => Constraint::Or(v.into_iter().map(map_editor_noops).collect()),
+        Constraint::Not(inner) => {
+            let inner = map_editor_noops(*inner);
+            // After mapping the inner subtree, if it reduces to "no-op
+            // skeleton" (an And([])), the Not wrapper is also a no-op
+            // placeholder in editor terms.
+            if matches!(&inner, Constraint::And(v) if v.is_empty()) {
+                Constraint::And(Vec::new())
+            } else {
+                Constraint::Not(Box::new(inner))
+            }
+        }
+        leaf => leaf,
+    }
 }
 
 pub fn is_chess_960(alphabet: &[Piece], root: &ChessConstraint) -> bool {
@@ -186,5 +220,49 @@ mod tests {
         let canonical = chess::chess_960().into_problem();
         let empty_root = Constraint::And(Vec::new());
         assert!(!is_chess_960(&canonical.pieces, &empty_root));
+    }
+
+    #[test]
+    fn editor_simplify_collapses_empty_or_to_noop() {
+        // Or([]) alone simplifies to no-op (And([])).
+        let c: ChessConstraint = Constraint::Or(Vec::new());
+        let simplified = editor_simplify(c);
+        assert_eq!(simplified, Constraint::And(Vec::new()));
+    }
+
+    #[test]
+    fn editor_simplify_drops_empty_or_inside_and() {
+        // Without the wrapper this would collapse the whole And to Or([])
+        // (strict false propagation). With editor semantics it should keep
+        // the meaningful leaf.
+        let leaf = Constraint::Count {
+            piece: chess::Piece::King,
+            op: chess_startpos_rs::CountOp::Eq,
+            value: 1,
+        };
+        let c = Constraint::And(vec![leaf.clone(), Constraint::Or(Vec::new())]);
+        assert_eq!(editor_simplify(c), leaf);
+    }
+
+    #[test]
+    fn editor_simplify_collapses_not_of_placeholder() {
+        // Not(Or([])) — Not over an editor placeholder — should be a no-op,
+        // not the strict reading of "negation of false = true".
+        // After map_editor_noops, the inner Or([]) becomes And([]), and
+        // Not(And([])) collapses to no-op in the wrapper.
+        let c: ChessConstraint = Constraint::Not(Box::new(Constraint::Or(Vec::new())));
+        assert_eq!(editor_simplify(c), Constraint::And(Vec::new()));
+    }
+
+    #[test]
+    fn editor_simplify_preserves_real_constraint() {
+        // A real, non-placeholder constraint goes through unchanged
+        // (modulo upstream simplification of redundant wrappers).
+        let leaf = Constraint::At {
+            piece: chess::Piece::Queen,
+            square: 3,
+        };
+        let wrapped = Constraint::And(vec![leaf.clone()]);
+        assert_eq!(editor_simplify(wrapped), leaf);
     }
 }
