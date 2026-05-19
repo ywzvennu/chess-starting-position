@@ -260,13 +260,14 @@ button {
 .theme-menu button {
   display: flex;
   align-items: center;
-  /* Override the global `button { justify-content: center }` so menu
-     rows line up flush-left with a consistent check / icon / label
-     column layout. */
+  /* Override the global `button { justify-content: center }` so menu rows
+     line up flush-left. Padding matches `.theme-button` so the `[icon]
+     [name]` columns sit at the same x-offset in the trigger and in every
+     menu row — open/close transitions don't shift content sideways. */
   justify-content: flex-start;
   gap: 0.4rem;
   width: 100%;
-  padding: 0.35rem 0.55rem;
+  padding: 0.35rem 0.6rem;
   border: 0;
   background: transparent;
   color: var(--fg);
@@ -277,20 +278,15 @@ button {
   text-align: left;
 }
 
-.theme-menu button:hover {
+.theme-menu button:not(.selected):hover {
   background: var(--bg);
 }
 
+/* Selected row uses the segmented-control highlight (accent background)
+   rather than an inline check mark, matching the orientation toggle. */
 .theme-menu button.selected {
-  color: var(--accent);
-}
-
-.theme-menu .check {
-  width: 1ch;
-  display: inline-block;
-  color: var(--accent);
-  text-align: center;
-  flex: 0 0 auto;
+  background: var(--accent);
+  color: var(--pane-bg);
 }
 
 .intro {
