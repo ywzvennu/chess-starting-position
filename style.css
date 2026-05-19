@@ -851,14 +851,6 @@ button {
   margin: 0;
 }
 
-.node.combinator {
-  border-left: 3px solid var(--accent);
-}
-
-.node.combinator.not-node {
-  border-left-color: #c0392b;
-}
-
 .node-head {
   display: flex;
   align-items: center;
