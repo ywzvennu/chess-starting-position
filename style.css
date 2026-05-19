@@ -145,6 +145,20 @@ input[type="text"] {
   font-size: 16px;
 }
 
+/* Hide the native browser spinner on number inputs. The dedicated ◀ / ▶
+   stepper buttons (and the ← / → keyboard shortcuts) are the affordance
+   for stepping; the native chevrons are tiny, browser-styled, and
+   effectively invisible on touch. */
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 
 button {
   min-height: 36px;
@@ -830,7 +844,7 @@ button {
 }
 
 .row-body input[type="number"] {
-  width: 4ch;
+  width: 5ch;
   font-variant-numeric: tabular-nums;
 }
 
