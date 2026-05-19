@@ -349,7 +349,14 @@ button {
   background: var(--square-dark);
 }
 
-.glyph {
+.glyph,
+.loading-glyph {
+  /* Chess symbols (U+2654–U+265F) render condensed in many UI fonts.
+     Prefer a font stack with well-proportioned symbol glyphs. */
+  font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2",
+    "Noto Sans Symbols", "DejaVu Sans", serif;
+  font-feature-settings: normal;
+  font-stretch: normal;
   line-height: 1;
 }
 
