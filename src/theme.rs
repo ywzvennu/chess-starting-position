@@ -120,9 +120,6 @@ pub fn ThemeToggle() -> impl IntoView {
                                                 open.set(false);
                                             }
                                         >
-                                            <span class="check">
-                                                {move || if selected() { "✓" } else { "" }}
-                                            </span>
                                             <span class="theme-icon">{t.icon()}</span>
                                             <span class="theme-name">{t.name()}</span>
                                         </button>
