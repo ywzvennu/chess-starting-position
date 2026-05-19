@@ -10,7 +10,7 @@ repository = "https://github.com/ywzvennu/chess-starting-position"
 leptos = { version = "0.8", features = ["csr"] }
 console_error_panic_hook = "0.1"
 chess-startpos-rs = { version = "0.1.1", features = ["serde"] }
-web-sys = { version = "0.3", features = ["Window", "Storage", "Document", "Element", "Navigator", "Clipboard", "History", "Location"] }
+web-sys = { version = "0.3", features = ["Window", "Storage", "Document", "Element", "Navigator", "Clipboard", "History", "Location", "KeyboardEvent", "EventTarget"] }
 wasm-bindgen = "0.2"
 js-sys = "0.3"
 serde_json = "1"

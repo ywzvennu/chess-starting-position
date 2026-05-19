@@ -3,6 +3,8 @@ use crate::components::board_actions::BoardActions;
 use crate::state::{build_problem, is_chess_960, AppState};
 use chess_startpos_rs::chess::{self, Piece};
 use leptos::prelude::*;
+use wasm_bindgen::closure::Closure;
+use wasm_bindgen::JsCast;
 
 #[component]
 pub fn OutputPanel() -> impl IntoView {
@@ -81,6 +83,17 @@ pub fn OutputPanel() -> impl IntoView {
             index.set(0);
         }
     });
+
+    install_keyboard_shortcuts(
+        index,
+        count,
+        seed,
+        internal_seed,
+        advance,
+        sample,
+        alphabet,
+        root_constraint,
+    );
 
     let sample_arrangement = Signal::derive(move || {
         sample.with(|s| s.as_ref().map(|(_, a)| a.clone()).unwrap_or_default())
@@ -183,12 +196,14 @@ pub fn OutputPanel() -> impl IntoView {
                                 on:click=on_prev
                                 prop:disabled=stepper_disabled
                                 aria-label="Previous arrangement"
+                                title="Previous (←)"
                             >"◀"</button>
                             <button
                                 type="button"
                                 on:click=on_next
                                 prop:disabled=stepper_disabled
                                 aria-label="Next arrangement"
+                                title="Next (→)"
                             >"▶"</button>
                             <span class="of">
                                 {move || format!("of {}", count.get())}
@@ -217,7 +232,11 @@ pub fn OutputPanel() -> impl IntoView {
                                     on:input=on_seed_input
                                 />
                             </label>
-                            <button type="button" on:click=on_sample>"Sample"</button>
+                            <button
+                                type="button"
+                                on:click=on_sample
+                                title="Sample (S or space)"
+                            >"Sample"</button>
                             <label class="advance-toggle" title="Advance the seed via xorshift after each sample">
                                 <input
                                     type="checkbox"
@@ -247,6 +266,87 @@ pub fn OutputPanel() -> impl IntoView {
             }
         }}
     }
+}
+
+/// Wire up a window-level `keydown` listener that drives the by-index
+/// stepper and the Sample button without the user having to click. The
+/// closure is installed once at mount and intentionally leaked — `OutputPanel`
+/// lives for the lifetime of the app, so we don't need to track a handle for
+/// teardown. Shortcuts are suppressed when focus is in a form control so
+/// typing in the index/seed/constraint inputs continues to work normally.
+#[allow(clippy::too_many_arguments)]
+fn install_keyboard_shortcuts(
+    index: RwSignal<u64>,
+    count: Memo<u64>,
+    seed: RwSignal<u64>,
+    internal_seed: StoredValue<u64>,
+    advance: RwSignal<bool>,
+    sample: RwSignal<Option<(u64, Vec<Piece>)>>,
+    alphabet: RwSignal<Vec<Piece>>,
+    root_constraint: RwSignal<crate::state::ChessConstraint>,
+) {
+    let handler = Closure::wrap(Box::new(move |ev: web_sys::KeyboardEvent| {
+        if is_typing_target(&ev) {
+            return;
+        }
+        match ev.key().as_str() {
+            "ArrowLeft" => {
+                index.update(|i| {
+                    if *i > 0 {
+                        *i -= 1;
+                    }
+                });
+                ev.prevent_default();
+            }
+            "ArrowRight" => {
+                let c = count.get();
+                index.update(|i| {
+                    if c > 0 && *i + 1 < c {
+                        *i += 1;
+                    }
+                });
+                ev.prevent_default();
+            }
+            "s" | "S" | " " => {
+                let p = build_problem(alphabet.get(), root_constraint.get());
+                let c = p.count();
+                if c == 0 {
+                    sample.set(None);
+                    ev.prevent_default();
+                    return;
+                }
+                let s = internal_seed.get_value();
+                let idx = mix_seed(s) % c;
+                if let Some(arr) = p.at(idx) {
+                    sample.set(Some((idx, arr)));
+                }
+                let next = advance_seed(s);
+                internal_seed.set_value(next);
+                if advance.get() {
+                    seed.set(next);
+                }
+                ev.prevent_default();
+            }
+            _ => {}
+        }
+    }) as Box<dyn Fn(web_sys::KeyboardEvent)>);
+
+    if let Some(win) = web_sys::window() {
+        let _ = win.add_event_listener_with_callback("keydown", handler.as_ref().unchecked_ref());
+    }
+    handler.forget();
+}
+
+fn is_typing_target(ev: &web_sys::KeyboardEvent) -> bool {
+    ev.target()
+        .and_then(|t| t.dyn_into::<web_sys::Element>().ok())
+        .map(|el| {
+            matches!(
+                el.tag_name().to_uppercase().as_str(),
+                "INPUT" | "SELECT" | "TEXTAREA"
+            )
+        })
+        .unwrap_or(false)
 }
 
 fn advance_seed(prev: u64) -> u64 {
