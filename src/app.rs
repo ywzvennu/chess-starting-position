@@ -7,6 +7,24 @@ use crate::state::{clear_url_state, is_default_state, read_url_state, write_url_
 use crate::theme::ThemeToggle;
 use leptos::prelude::*;
 
+/// `git describe --tags --always --dirty` injected at build time by the
+/// deploy workflow; falls back to the Cargo package version for local builds.
+fn version_label() -> &'static str {
+    match option_env!("BUILD_VERSION") {
+        Some(v) => v,
+        None => concat!("v", env!("CARGO_PKG_VERSION")),
+    }
+}
+
+/// Link target for the version badge: the deployed commit on GitHub when CI
+/// supplied a SHA, otherwise the repository home.
+fn version_url() -> String {
+    match option_env!("BUILD_SHA") {
+        Some(sha) => format!("https://github.com/ywzvennu/chess-starting-position/commit/{sha}"),
+        None => "https://github.com/ywzvennu/chess-starting-position".to_string(),
+    }
+}
+
 #[component]
 pub fn App() -> impl IntoView {
     let state = AppState::new();
@@ -102,13 +120,10 @@ pub fn App() -> impl IntoView {
             </a>
             <a
                 class="footer-link footer-version"
-                href=format!(
-                    "https://github.com/ywzvennu/chess-starting-position/releases/tag/v{}",
-                    env!("CARGO_PKG_VERSION"),
-                )
+                href=version_url()
                 target="_blank"
                 rel="noopener noreferrer"
-                title="View this release on GitHub"
+                title="View this build on GitHub"
             >
                 <svg
                     class="footer-icon"
@@ -125,7 +140,7 @@ pub fn App() -> impl IntoView {
                     <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path>
                     <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle>
                 </svg>
-                <span>{format!("v{}", env!("CARGO_PKG_VERSION"))}</span>
+                <span>{version_label()}</span>
             </a>
         </footer>
         </main>
