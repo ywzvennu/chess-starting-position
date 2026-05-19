@@ -108,6 +108,33 @@ pub fn write_url_state(alphabet: &[Piece], root: &ChessConstraint) {
     }
 }
 
+/// True when the active state matches the default (full alphabet + empty
+/// root constraint) — the state a fresh page would otherwise serialise into
+/// a verbose `#c=…` hash for no information gain.
+pub fn is_default_state(alphabet: &[Piece], root: &ChessConstraint) -> bool {
+    if alphabet != ALL_PIECES.as_slice() {
+        return false;
+    }
+    matches!(root, Constraint::And(v) if v.is_empty())
+}
+
+/// Remove any URL hash via `history.replaceState`, leaving only the
+/// `pathname` (+ `search`). Used when the active state matches the default
+/// so the URL stays clean on a fresh load.
+pub fn clear_url_state() {
+    let Some(win) = web_sys::window() else {
+        return;
+    };
+    let Ok(history) = win.history() else {
+        return;
+    };
+    let location = win.location();
+    let pathname = location.pathname().unwrap_or_default();
+    let search = location.search().unwrap_or_default();
+    let url = format!("{pathname}{search}");
+    let _ = history.replace_state_with_url(&wasm_bindgen::JsValue::null(), "", Some(&url));
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

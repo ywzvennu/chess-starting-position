@@ -3,7 +3,7 @@ use crate::components::constraint_editor::ConstraintEditor;
 use crate::components::orientation::OrientationToggle;
 use crate::components::output::OutputPanel;
 use crate::components::presets::PresetButtons;
-use crate::state::{read_url_state, write_url_state, AppState};
+use crate::state::{clear_url_state, is_default_state, read_url_state, write_url_state, AppState};
 use crate::theme::ThemeToggle;
 use leptos::prelude::*;
 
@@ -21,11 +21,17 @@ pub fn App() -> impl IntoView {
     provide_context(state);
 
     // Mirror live state into the URL hash on every change, including the
-    // initial mount so a fresh page always has a shareable URL.
+    // initial mount. The default state (full alphabet + empty constraint)
+    // carries no information, so clear the hash instead of writing a verbose
+    // serialisation; a fresh page therefore has a clean URL.
     Effect::new(move |_| {
         let alphabet = state.alphabet.get();
         let root = state.root_constraint.get();
-        write_url_state(&alphabet, &root);
+        if is_default_state(&alphabet, &root) {
+            clear_url_state();
+        } else {
+            write_url_state(&alphabet, &root);
+        }
     });
 
     view! {
