@@ -57,7 +57,10 @@ jobs:
           path: dist
 
   deploy:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # Only publish to Pages on SemVer tag pushes or a manual run. Pushes to
+    # `main` still run the `build` job above for validation, but do not
+    # deploy until a tag is cut.
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     environment:
