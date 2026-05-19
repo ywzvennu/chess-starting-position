@@ -63,6 +63,29 @@ body {
   color: var(--fg);
 }
 
+#loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+}
+
+#loading .loading-glyph {
+  font-size: 1.8rem;
+  color: var(--accent);
+  animation: loading-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
 /* Mobile-friendliness: keep number inputs at >=16px so iOS doesn't zoom
    in on focus; bump the minimum button height to avoid fat-finger misses
    without changing desktop appearance. */
