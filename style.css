@@ -418,6 +418,17 @@ button {
   color: var(--accent);
 }
 
+.preset-grid button.active {
+  background: var(--accent);
+  color: var(--pane-bg);
+  border-color: var(--accent);
+}
+
+.preset-grid button.active:hover {
+  color: var(--pane-bg);
+  opacity: 0.92;
+}
+
 .constraint-view pre {
   margin: 0.3rem 0 0;
   padding: 0.5rem 0.6rem;
